@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Connection Test</title>
+<style>
+  body { font-family: sans-serif; max-width: 500px; margin: 40px auto; padding: 20px; }
+  input { width: 100%; padding: 10px; font-size: 13px; font-family: monospace; border: 2px solid #ccc; border-radius: 6px; margin: 10px 0; box-sizing: border-box; }
+  button { padding: 12px 24px; background: #1a2530; color: white; border: none; border-radius: 6px; font-size: 14px; cursor: pointer; width: 100%; }
+  #result { margin-top: 16px; padding: 12px; background: #f5f5f5; border-radius: 6px; font-family: monospace; font-size: 12px; white-space: pre-wrap; min-height: 40px; }
+</style>
+</head>
+<body>
+
+<h2>✈ Apps Script Connection Test</h2>
+<p>Paste your URL and click Test:</p>
+<input type="text" id="url" placeholder="https://script.google.com/macros/s/.../exec">
+<button onclick="test()">Test Connection</button>
+<div id="result">Result will appear here…</div>
+
+<script>
+function test() {
+  var url = document.getElementById('url').value.trim();
+  var result = document.getElementById('result');
+
+  result.textContent = 'Testing…';
+
+  if (!url) { result.textContent = 'ERROR: No URL entered'; return; }
+  if (!url.includes('script.google.com')) { result.textContent = 'ERROR: Does not look like an Apps Script URL'; return; }
+  if (!url.endsWith('/exec')) { result.textContent = 'ERROR: URL must end with /exec\nYours ends with: ' + url.slice(-20); return; }
+
+  result.textContent = 'URL looks good. Fetching…\n' + url;
+
+  fetch(url + '?action=read')
+    .then(function(response) {
+      result.textContent += '\n\nHTTP Status: ' + response.status;
+      return response.text();
+    })
+    .then(function(text) {
+      result.textContent += '\nResponse: ' + text.slice(0, 300);
+      try {
+        var json = JSON.parse(text);
+        result.textContent += '\n\n✅ SUCCESS! Flights in sheet: ' + (json.flights ? json.flights.length : 0);
+        result.style.background = '#d4edda';
+      } catch(e) {
+        result.textContent += '\n\n❌ Could not parse JSON. The script may have an error.';
+        result.style.background = '#f8d7da';
+      }
+    })
+    .catch(function(err) {
+      result.textContent += '\n\n❌ Fetch failed: ' + err.message;
+      result.style.background = '#f8d7da';
+    });
+}
+
+// Also allow Enter key
+document.getElementById('url').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') test();
+});
+</script>
+</body>
+</html>
