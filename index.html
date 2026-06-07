@@ -307,6 +307,34 @@ var AIRLINE_MAP = [
 
 var flights = [], map = null, arcLayers = [], dotLayers = [], highlightKey = null;
 
+function parseSheetDate(raw) {
+  if (!raw) return '';
+  var s = String(raw).trim();
+
+  // Already YYYY-MM-DD
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+
+  // Full JS Date string e.g. "Mon Apr 06 2026 00:00:00 GMT+0530 (India Standard Time)"
+  // or ISO "2026-04-05T18:30:00.000Z"
+  try {
+    var d = new Date(s);
+    if (!isNaN(d.getTime())) {
+      // Use UTC+5:30 offset to avoid date shifting for IST dates
+      var offset = 5.5 * 60 * 60000;
+      var local = new Date(d.getTime() + offset);
+      return local.getUTCFullYear() + '-' +
+        String(local.getUTCMonth() + 1).padStart(2, '0') + '-' +
+        String(local.getUTCDate()).padStart(2, '0');
+    }
+  } catch(e) {}
+
+  // DD/MM/YYYY
+  var m1 = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if (m1) return m1[3] + '-' + m1[2].padStart(2,'0') + '-' + m1[1].padStart(2,'0');
+
+  return s;
+}
+
 // ── Sheet API ─────────────────────────────────────────────────────────────────
 // Uses no-cors mode + text/plain mime type to bypass CORS preflight.
 // Apps Script returns text/plain which is readable cross-origin.
@@ -325,7 +353,15 @@ function sheetGet(params) {
       // Strip any HTML wrapper Google might add
       var match = text.match(/\{[\s\S]*\}/);
       if (!match) throw new Error('Unexpected response from Sheet');
-      return JSON.parse(match[0]);
+      var data = JSON.parse(match[0]);
+      // Fix dates that come back from Sheet in unexpected formats
+      if (data.flights) {
+        data.flights = data.flights.map(function(f) {
+          f.date = parseSheetDate(f.date);
+          return f;
+        });
+      }
+      return data;
     })
     .catch(function(err) {
       // If blocked by CORS, try via a no-cors iframe trick using fetch with mode no-cors
@@ -479,15 +515,6 @@ function deleteFlight(id){
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function rkey(f){return [f.from,f.to].sort().join('-');}
 function haversine(a,b){var R=6371,dL=(b.lat-a.lat)*Math.PI/180,dO=(b.lon-a.lon)*Math.PI/180;var s=Math.sin(dL/2)*Math.sin(dL/2)+Math.cos(a.lat*Math.PI/180)*Math.cos(b.lat*Math.PI/180)*Math.sin(dO/2)*Math.sin(dO/2);return Math.round(2*R*Math.asin(Math.sqrt(s)));}
-function fmtDate(d){
-  if(!d||d==='Invalid Date') return '—';
-  // Already a clean YYYY-MM-DD string
-  if(/^\d{4}-\d{2}-\d{2}$/.test(d)){
-    try{return new Date(d+'T12:00:00').toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});}
-    catch(e){return d;}
-  }
-  return d;
-}
 function showStatus(id,type,msg){var el=document.getElementById(id);el.className='status '+type;el.textContent=msg;if(type!=='loading')setTimeout(function(){el.style.display='none';el.className='status';},4000);}
 function showBanner(type,msg){var b=document.getElementById('load-banner');b.textContent=msg;b.className='load-banner '+type;if(type!=='loading')setTimeout(function(){b.style.display='none';},4000);}
 
