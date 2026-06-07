@@ -8,7 +8,8 @@
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src='https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js'></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <style>
 :root {
   --bg:#0f0f0f; --bg2:#181818; --bg3:#222;
@@ -49,7 +50,7 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:16px 2
 .tag-amber{background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-border);}
 
 /* Drop zone */
-.drop-zone{border:2px dashed rgba(137,180,250,0.25);border-radius:var(--radius);padding:28px 20px;text-align:center;cursor:pointer;transition:all 0.2s;position:relative;}
+.drop-zone{border:2px dashed rgba(137,180,250,0.25);border-radius:var(--radius);padding:28px 20px;text-align:center;cursor:pointer;transition:all 0.2s;position:relative;display:block;}
 .drop-zone:hover,.drop-zone.drag-over{border-color:var(--blue);background:var(--blue-bg);}
 .drop-zone.scanning{border-color:var(--amber);background:var(--amber-bg);pointer-events:none;}
 .drop-zone.success{border-color:var(--green);background:var(--green-bg);}
@@ -57,23 +58,29 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:16px 2
 .dz-icon{font-size:28px;display:block;margin-bottom:8px;}
 .dz-title{font-size:13px;font-weight:600;margin-bottom:3px;}
 .dz-sub{font-size:11px;color:var(--text3);}
-.ocr-progress{margin-top:10px;font-size:11px;font-family:'DM Mono',monospace;color:var(--amber);}
-.ocr-bar{height:3px;background:rgba(245,200,66,0.15);border-radius:2px;margin-top:6px;overflow:hidden;}
+.ocr-progress{margin-top:10px;font-size:11px;font-family:'DM Mono',monospace;color:var(--amber);display:none;}
+.ocr-bar{height:3px;background:rgba(245,200,66,0.15);border-radius:2px;margin-top:6px;overflow:hidden;display:none;}
 .ocr-bar-fill{height:100%;background:var(--amber);border-radius:2px;transition:width 0.3s;width:0%;}
+.method-badge{position:absolute;top:10px;right:12px;font-size:9px;font-family:'DM Mono',monospace;padding:2px 7px;border-radius:10px;font-weight:600;display:none;}
+.method-badge.pdf{background:rgba(137,180,250,0.15);color:var(--blue);}
+.method-badge.ocr{background:rgba(245,200,66,0.15);color:var(--amber);}
 
-/* Raw text preview */
 .ocr-preview{margin-top:10px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px 10px;font-size:10px;font-family:'DM Mono',monospace;color:var(--text3);max-height:56px;overflow-y:auto;line-height:1.5;display:none;}
+
+.divider{display:flex;align-items:center;gap:12px;margin:16px 0;color:var(--text3);font-size:12px;}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border);}
 
 .field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
 label.lbl{font-size:11px;color:var(--text3);display:block;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.5px;}
-input[type=text],input[type=date],select{width:100%;padding:9px 12px;font-size:13px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg3);color:var(--text);font-family:'DM Sans',sans-serif;outline:none;transition:border-color 0.15s,background 0.15s;}
+input[type=text],input[type=date]{width:100%;padding:9px 12px;font-size:13px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg3);color:var(--text);font-family:'DM Sans',sans-serif;outline:none;transition:border-color 0.15s,background 0.15s;}
 input[type=text]::placeholder{color:var(--text3);}
 input.filled-auto{border-color:rgba(168,230,163,0.4);background:rgba(168,230,163,0.04);}
 input.filled-low{border-color:rgba(245,200,66,0.4);background:rgba(245,200,66,0.04);}
-select option{background:var(--bg3);}
+
 .btn{padding:10px 20px;font-size:13px;font-weight:600;border-radius:var(--radius-sm);cursor:pointer;border:none;font-family:'DM Sans',sans-serif;transition:all 0.15s;}
 .btn-primary{background:var(--accent);color:#0f0f0f;}
 .btn-primary:hover{opacity:0.88;}
+.btn-primary:disabled{opacity:0.4;cursor:not-allowed;}
 .btn-sm{padding:6px 14px;font-size:12px;}
 .btn-danger{background:var(--red-bg);color:var(--red);border:1px solid var(--red-border);}
 
@@ -81,9 +88,6 @@ select option{background:var(--bg3);}
 .status.ok{background:var(--green-bg);color:var(--green);border:1px solid var(--green-border);display:block;}
 .status.err{background:var(--red-bg);color:var(--red);border:1px solid var(--red-border);display:block;}
 .status.loading{background:var(--blue-bg);color:var(--blue);border:1px solid rgba(137,180,250,0.2);display:block;}
-
-.divider{display:flex;align-items:center;gap:12px;margin:16px 0;color:var(--text3);font-size:12px;}
-.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border);}
 
 .metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:16px;}
 .metric{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:16px;}
@@ -117,13 +121,12 @@ select option{background:var(--bg3);}
 
 .empty{text-align:center;padding:52px 20px;color:var(--text3);}
 .empty-icon{font-size:28px;margin-bottom:10px;opacity:0.3;}
-.empty p{font-size:14px;}
-.empty span{font-size:12px;margin-top:5px;display:block;}
+.empty p{font-size:14px;} .empty span{font-size:12px;margin-top:5px;display:block;}
 
 #map{flex:1;min-height:0;}
 .map-hint{text-align:center;padding:8px;font-size:11px;color:var(--text3);background:var(--bg);border-top:1px solid var(--border);}
 
-.load-banner{position:fixed;top:0;left:0;right:0;z-index:200;padding:10px 20px;font-size:13px;font-family:'DM Mono',monospace;text-align:center;transition:all 0.3s;display:none;}
+.load-banner{position:fixed;top:0;left:0;right:0;z-index:200;padding:10px 20px;font-size:13px;font-family:'DM Mono',monospace;text-align:center;display:none;}
 .load-banner.loading{background:#1a1a2e;color:var(--blue);border-bottom:1px solid rgba(137,180,250,0.2);display:block;}
 .load-banner.ok{background:#0d1f0d;color:var(--green);border-bottom:1px solid rgba(168,230,163,0.2);display:block;}
 .load-banner.err{background:#1f0d0d;color:var(--red);border-bottom:1px solid rgba(240,152,152,0.2);display:block;}
@@ -141,7 +144,7 @@ select option{background:var(--bg3);}
 </head>
 <body>
 
-<div id="load-banner" class="load-banner loading">⏳ Loading your flights from Google Sheet…</div>
+<div id="load-banner" class="load-banner loading">⏳ Loading flights from Google Sheet…</div>
 
 <nav>
   <div class="nav-logo">✈ <span>Flight</span>Tracker</div>
@@ -162,55 +165,49 @@ select option{background:var(--bg3);}
 
 <div class="mobile-tabs">
   <button class="mobile-tab active" onclick="showPage('add',this)">
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
-    Add
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>Add
   </button>
   <button class="mobile-tab" onclick="showPage('log',this)">
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
-    Log
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>Log
   </button>
   <button class="mobile-tab" onclick="showPage('stats',this)">
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-    Stats
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Stats
   </button>
   <button class="mobile-tab" onclick="showPage('map',this)">
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
-    Map
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>Map
   </button>
 </div>
 
 <!-- ADD PAGE -->
 <div class="page active" id="page-add">
 
-  <!-- Boarding pass scan card -->
   <div class="card">
     <div class="card-header">
       <span class="card-title">Scan boarding pass</span>
-      <span class="tag tag-blue">OCR — no account needed</span>
+      <span class="tag tag-blue">PDF · Image · OCR</span>
     </div>
 
     <label id="drop-zone" class="drop-zone"
       ondragover="event.preventDefault();this.classList.add('drag-over')"
       ondragleave="this.classList.remove('drag-over')"
       ondrop="handleDrop(event)">
-      <input type="file" id="bp-file" accept="image/*" style="display:none" onchange="handleFile(event)">
+      <input type="file" id="bp-file" accept="image/*,.pdf,application/pdf" style="display:none" onchange="handleFile(event)">
       <span class="dz-icon" id="dz-icon">🎫</span>
-      <div class="dz-title" id="dz-title">Upload boarding pass photo</div>
-      <div class="dz-sub" id="dz-sub">Click or drag · JPG, PNG, HEIC · runs on your device, nothing uploaded</div>
-      <div class="ocr-progress" id="ocr-progress" style="display:none"></div>
-      <div class="ocr-bar" id="ocr-bar" style="display:none"><div class="ocr-bar-fill" id="ocr-bar-fill"></div></div>
+      <div class="dz-title" id="dz-title">Upload boarding pass</div>
+      <div class="dz-sub" id="dz-sub">PDF (e-ticket) or photo/screenshot · processed locally, nothing uploaded</div>
+      <div class="ocr-progress" id="ocr-progress"></div>
+      <div class="ocr-bar" id="ocr-bar"><div class="ocr-bar-fill" id="ocr-bar-fill"></div></div>
+      <span class="method-badge" id="method-badge"></span>
     </label>
 
     <div class="ocr-preview" id="ocr-preview"></div>
 
-    <div class="divider">flight details — review &amp; confirm</div>
+    <div class="divider">review &amp; confirm details</div>
 
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
-      <span style="font-size:12px;color:var(--text3);">Fields highlighted in</span>
-      <span style="font-size:11px;padding:2px 8px;border-radius:10px;background:var(--green-bg);color:var(--green);border:1px solid var(--green-border);">green</span>
-      <span style="font-size:12px;color:var(--text3);">were auto-extracted ·</span>
-      <span style="font-size:11px;padding:2px 8px;border-radius:10px;background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-border);">amber</span>
-      <span style="font-size:12px;color:var(--text3);">= low confidence, please check</span>
+    <div style="display:flex;align-items:center;gap:6px;margin-bottom:12px;flex-wrap:wrap;">
+      <span style="font-size:12px;color:var(--text3);">Auto-filled:</span>
+      <span style="font-size:11px;padding:2px 8px;border-radius:10px;background:var(--green-bg);color:var(--green);border:1px solid var(--green-border);">green = confident</span>
+      <span style="font-size:11px;padding:2px 8px;border-radius:10px;background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-border);">amber = check</span>
     </div>
 
     <div class="field-row">
@@ -230,23 +227,18 @@ select option{background:var(--bg3);}
     <div class="status" id="add-status"></div>
   </div>
 
-  <!-- Sheet connection card -->
-  <div class="card" id="settings-card">
+  <!-- Sheet connection -->
+  <div class="card">
     <div class="card-header">
       <span class="card-title">Google Sheet sync</span>
-      <span class="tag" id="sheet-tag" style="background:var(--red-bg);color:var(--red);border:1px solid var(--red-border);">Not connected</span>
+      <span class="tag" id="sheet-tag">Not connected</span>
     </div>
     <div id="sheet-connected" style="display:none">
       <div style="font-size:12px;color:var(--text3);word-break:break-all;margin-bottom:12px" id="sheet-url-display"></div>
       <button class="btn btn-sm btn-danger" onclick="clearScript()">Disconnect</button>
     </div>
     <div id="sheet-disconnected">
-      <div style="font-size:13px;color:var(--text2);margin-bottom:12px;line-height:1.7">
-        Connect your Google Sheet to sync flights across all devices (phone, laptop, tablet). One-time setup.
-      </div>
-      <div style="font-size:12px;color:var(--text3);margin-bottom:12px;line-height:1.8">
-        <strong style="color:var(--text2)">Steps:</strong> Open your Sheet → Extensions → Apps Script → paste <code style="background:var(--bg3);padding:1px 5px;border-radius:3px;">apps-script.js</code> → Save → Deploy → New deployment → Web app → Execute as: Me · Anyone → Copy the /exec URL → paste below
-      </div>
+      <div style="font-size:13px;color:var(--text2);margin-bottom:12px;line-height:1.7">Connect your Google Sheet to sync flights across all devices. <a href="#" style="color:var(--blue)" onclick="alert('1. Open your Sheet\n2. Extensions → Apps Script\n3. Paste apps-script.js contents → Save\n4. Deploy → New deployment → Web app\n5. Execute as: Me · Who has access: Anyone\n6. Copy the /exec URL and paste below')">Setup guide</a></div>
       <input type="text" id="url-input" placeholder="https://script.google.com/macros/s/…/exec" style="margin-bottom:10px">
       <button class="btn btn-primary btn-sm" onclick="connectScript()">Connect →</button>
       <div class="status" id="url-status"></div>
@@ -277,14 +269,16 @@ select option{background:var(--bg3);}
 <!-- MAP PAGE -->
 <div class="page page-map" id="page-map">
   <div id="map"></div>
-  <div class="map-hint">Click any route to highlight it · zoom &amp; pan to explore</div>
+  <div class="map-hint">Click any route to highlight · zoom &amp; pan to explore</div>
 </div>
 
 <script>
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
 // ── Config ────────────────────────────────────────────────────────────────────
 var SCRIPT_URL = localStorage.getItem('ft_script_url') || '';
 
-// ── Airport DB ────────────────────────────────────────────────────────────────
+// ── Airports ──────────────────────────────────────────────────────────────────
 var AP = {
   BLR:{n:"Bengaluru",c:"India",lat:13.199,lon:77.705},DEL:{n:"Delhi",c:"India",lat:28.556,lon:77.100},
   BOM:{n:"Mumbai",c:"India",lat:19.089,lon:72.868},MAA:{n:"Chennai",c:"India",lat:12.990,lon:80.169},
@@ -345,193 +339,227 @@ var AIRLINE_MAP = [
   [/finnair/i,'Finnair'],[/qantas/i,'Qantas'],[/flydubai/i,'flydubai'],[/air\s*arabia/i,'Air Arabia'],
 ];
 
-// ── State ──────────────────────────────────────────────────────────────────────
-var flights = [];
-var map = null, arcLayers = [], dotLayers = [], highlightKey = null;
+var flights = [], map = null, arcLayers = [], dotLayers = [], highlightKey = null;
 
-// ── OCR — Tesseract.js ────────────────────────────────────────────────────────
+// ── PDF text extraction ───────────────────────────────────────────────────────
+async function extractPDFText(arrayBuffer) {
+  var pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+  var fullText = '';
+  for (var i = 1; i <= pdf.numPages; i++) {
+    var page = await pdf.getPage(i);
+    var content = await page.getTextContent();
+    // Sort items by position to preserve reading order
+    var items = content.items.map(function(it){ return {text:it.str, x:it.transform[4], y:it.transform[5]}; });
+    items.sort(function(a,b){ return b.y-a.y || a.x-b.x; });
+    var lines = [], cur = [], lastY = null;
+    items.forEach(function(it){
+      if (lastY !== null && Math.abs(it.y - lastY) > 5) { if (cur.length) lines.push(cur.join(' ')); cur = []; }
+      if (it.text.trim()) cur.push(it.text.trim());
+      lastY = it.y;
+    });
+    if (cur.length) lines.push(cur.join(' '));
+    fullText += lines.join('\n') + '\n';
+  }
+  return fullText;
+}
+
+// ── Drop / file handling ──────────────────────────────────────────────────────
 function handleDrop(e) {
   e.preventDefault();
   document.getElementById('drop-zone').classList.remove('drag-over');
   var file = e.dataTransfer.files[0];
-  if (file && file.type.startsWith('image/')) runOCR(file);
-  else setDZ('failed','❌','Please drop an image file (JPG, PNG, etc.)','PDF not supported — take a screenshot instead');
+  if (file) processFile(file);
 }
-
 function handleFile(e) {
   var file = e.target.files[0];
-  if (file) runOCR(file);
+  if (file) processFile(file);
   e.target.value = '';
 }
 
+async function processFile(file) {
+  var isPDF = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+  var isImage = file.type.startsWith('image/');
+
+  if (!isPDF && !isImage) {
+    setDZ('failed','❌','Unsupported file type','Upload a PDF or image (JPG, PNG, HEIC, screenshot)');
+    setTimeout(resetDZ, 3000); return;
+  }
+
+  setDZ('scanning','⏳', isPDF ? 'Extracting PDF text…' : 'Running OCR on image…',
+    isPDF ? 'Reading embedded text — usually instant' : 'OCR running in browser — takes 5–15 seconds');
+
+  showMethodBadge(isPDF ? 'pdf' : 'ocr', isPDF ? 'PDF text' : 'OCR');
+
+  var text = '';
+
+  if (isPDF) {
+    // Try PDF text extraction first
+    try {
+      var buf = await file.arrayBuffer();
+      text = await extractPDFText(buf);
+    } catch(e) {
+      text = '';
+    }
+
+    // If PDF has no embedded text (scanned), show message
+    if (!text.trim()) {
+      setDZ('failed','⚠️','No text in PDF','This PDF appears to be a scanned image. Take a screenshot and upload that instead.');
+      hideMethodBadge();
+      setTimeout(resetDZ, 5000); return;
+    }
+  } else {
+    // Image — use Tesseract OCR
+    showProgress(true);
+    try {
+      var result = await Tesseract.recognize(file, 'eng', {
+        logger: function(m) {
+          if (m.status === 'recognizing text') {
+            var pct = Math.round(m.progress * 100);
+            document.getElementById('ocr-progress').textContent = 'Reading text… ' + pct + '%';
+            document.getElementById('ocr-bar-fill').style.width = pct + '%';
+          }
+        }
+      });
+      text = result.data.text;
+    } catch(e) {
+      showProgress(false);
+      setDZ('failed','❌','OCR failed',e.message||'Try a clearer image');
+      setTimeout(resetDZ, 4000); return;
+    }
+    showProgress(false);
+
+    if (!text.trim()) {
+      setDZ('failed','❌','No text found','Try a clearer, well-lit photo');
+      hideMethodBadge(); setTimeout(resetDZ, 4000); return;
+    }
+  }
+
+  // Show raw text preview
+  var prev = document.getElementById('ocr-preview');
+  prev.style.display = 'block';
+  prev.textContent = text.replace(/\n+/g,' · ').substring(0,300) + (text.length>300?'…':'');
+
+  // Parse and fill
+  var parsed = parseBoardingPass(text);
+  var filled = fillForm(parsed);
+
+  if (filled >= 2) {
+    setDZ('success','✅','Boarding pass read!','Review the highlighted fields and click Add flight');
+  } else {
+    setDZ('failed','⚠️','Partial read','Some fields found — fill in the rest manually');
+  }
+  setTimeout(resetDZ, 6000);
+}
+
+function showProgress(show) {
+  document.getElementById('ocr-progress').style.display = show ? 'block' : 'none';
+  document.getElementById('ocr-bar').style.display = show ? 'block' : 'none';
+  if (!show) { document.getElementById('ocr-bar-fill').style.width = '0%'; }
+}
+function showMethodBadge(type, label) {
+  var b = document.getElementById('method-badge');
+  b.textContent = label; b.className = 'method-badge ' + type; b.style.display = 'block';
+}
+function hideMethodBadge() { document.getElementById('method-badge').style.display = 'none'; }
+
 function setDZ(state, icon, title, sub) {
   var dz = document.getElementById('drop-zone');
-  dz.className = 'drop-zone ' + state;
+  dz.className = 'drop-zone ' + (state||'');
   document.getElementById('dz-icon').textContent = icon;
   document.getElementById('dz-title').textContent = title;
   document.getElementById('dz-sub').textContent = sub;
 }
-
-function runOCR(file) {
-  setDZ('scanning','⏳','Reading boarding pass…','OCR running in your browser — this takes 5–15 seconds');
-  var prog = document.getElementById('ocr-progress');
-  var bar = document.getElementById('ocr-bar');
-  var fill = document.getElementById('ocr-bar-fill');
-  prog.style.display = 'block'; bar.style.display = 'block';
-  prog.textContent = 'Initialising…';
-
-  Tesseract.recognize(file, 'eng', {
-    logger: function(m) {
-      if (m.status === 'recognizing text') {
-        var pct = Math.round(m.progress * 100);
-        prog.textContent = 'Reading text… ' + pct + '%';
-        fill.style.width = pct + '%';
-      }
-    }
-  }).then(function(result) {
-    prog.style.display = 'none'; bar.style.display = 'none';
-    var text = result.data.text;
-    if (!text.trim()) { setDZ('failed','❌','No text found','Try a clearer photo with good lighting'); return; }
-
-    // Show raw preview
-    var prev = document.getElementById('ocr-preview');
-    prev.style.display = 'block';
-    prev.textContent = text.replace(/\n+/g,' · ').substring(0, 300) + (text.length > 300 ? '…' : '');
-
-    var parsed = parseBoardingPass(text);
-    var filled = fillForm(parsed);
-
-    if (filled >= 2) {
-      setDZ('success','✅','Boarding pass read!','Review the highlighted fields below and click Add flight');
-    } else {
-      setDZ('failed','⚠️','Partial read — fill in missing fields','OCR works best on clear, well-lit photos');
-    }
-    setTimeout(resetDZ, 6000);
-  }).catch(function(err) {
-    prog.style.display = 'none'; bar.style.display = 'none';
-    setDZ('failed','❌','OCR failed','Try a clearer image · ' + (err.message || ''));
-    setTimeout(resetDZ, 4000);
-  });
-}
-
 function resetDZ() {
-  setDZ('','🎫','Upload boarding pass photo','Click or drag · JPG, PNG, HEIC · runs on your device, nothing uploaded');
+  setDZ('','🎫','Upload boarding pass','PDF (e-ticket) or photo/screenshot · processed locally, nothing uploaded');
+  hideMethodBadge(); showProgress(false);
   document.getElementById('ocr-preview').style.display = 'none';
 }
 
-// ── Boarding pass parser ───────────────────────────────────────────────────────
+// ── Parser ────────────────────────────────────────────────────────────────────
 function parseBoardingPass(text) {
   var u = text.toUpperCase();
-  var result = { from:'', to:'', airline:'', date:'', flightNum:'', conf:{} };
-  var MONTHS = {JAN:1,FEB:2,MAR:3,APR:4,MAY:5,JUN:6,JUL:7,AUG:8,SEP:9,OCT:10,NOV:11,DEC:12};
+  var r = {from:'',to:'',airline:'',date:'',flightNum:'',conf:{}};
+  var M = {JAN:1,FEB:2,MAR:3,APR:4,MAY:5,JUN:6,JUL:7,AUG:8,SEP:9,OCT:10,NOV:11,DEC:12};
 
   // FROM/TO labels
   var ft = u.match(/FROM[:\s]+([A-Z]{3})[\s\S]{0,30}TO[:\s]+([A-Z]{3})/);
-  if (ft && IATA_SET.has(ft[1]) && IATA_SET.has(ft[2])) { result.from=ft[1]; result.to=ft[2]; result.conf.from=result.conf.to='high'; }
+  if (ft && IATA_SET.has(ft[1]) && IATA_SET.has(ft[2])) { r.from=ft[1]; r.to=ft[2]; r.conf.from=r.conf.to='high'; }
 
-  // ORIGIN/DEST labels
-  if (!result.from) {
-    var o = u.match(/ORIGIN[:\s]+([A-Z]{3})/), d = u.match(/DEST(?:INATION)?[:\s]+([A-Z]{3})/);
-    if (o && IATA_SET.has(o[1])) { result.from=o[1]; result.conf.from='high'; }
-    if (d && IATA_SET.has(d[1])) { result.to=d[1]; result.conf.to='high'; }
+  // ORIGIN/DESTINATION
+  if (!r.from) {
+    var o=u.match(/ORIGIN[:\s]+([A-Z]{3})/), d=u.match(/DEST(?:INATION)?[:\s]+([A-Z]{3})/);
+    if (o&&IATA_SET.has(o[1])) { r.from=o[1]; r.conf.from='high'; }
+    if (d&&IATA_SET.has(d[1])) { r.to=d[1]; r.conf.to='high'; }
   }
 
-  // Arrow/hyphen pattern BLR-LHR or BLR→LHR
-  if (!result.from || !result.to) {
-    var ar = u.match(/([A-Z]{3})\s*[-–→\/]\s*([A-Z]{3})/);
-    if (ar && IATA_SET.has(ar[1]) && IATA_SET.has(ar[2])) {
-      if (!result.from) { result.from=ar[1]; result.conf.from='med'; }
-      if (!result.to)   { result.to=ar[2];   result.conf.to='med'; }
+  // Arrow pattern BLR-LHR or BLR→LHR
+  if (!r.from||!r.to) {
+    var ar=u.match(/([A-Z]{3})\s*[-–→\/]\s*([A-Z]{3})/);
+    if (ar&&IATA_SET.has(ar[1])&&IATA_SET.has(ar[2])) {
+      if(!r.from){r.from=ar[1];r.conf.from='med';} if(!r.to){r.to=ar[2];r.conf.to='med';}
     }
   }
 
-  // Token scan — find first two valid IATA codes in sequence
-  if (!result.from || !result.to) {
-    var tokens = u.split(/[\s\n,;|()/\\]+/).filter(function(t){ return /^[A-Z]{3}$/.test(t) && IATA_SET.has(t); });
-    var unique = tokens.filter(function(v,i,a){ return a.indexOf(v)===i; });
-    if (unique.length >= 2) {
-      if (!result.from) { result.from=unique[0]; result.conf.from='low'; }
-      if (!result.to)   { result.to=unique[1];   result.conf.to='low'; }
-    }
+  // Token scan
+  if (!r.from||!r.to) {
+    var toks=u.split(/[\s\n,;|()/\\]+/).filter(function(t){return /^[A-Z]{3}$/.test(t)&&IATA_SET.has(t);});
+    var uniq=toks.filter(function(v,i,a){return a.indexOf(v)===i;});
+    if(uniq.length>=2){if(!r.from){r.from=uniq[0];r.conf.from='low';}if(!r.to){r.to=uniq[1];r.conf.to='low';}}
   }
 
   // Flight number
-  var fm = u.match(/\b([A-Z]{2})\s*-?\s*(\d{1,4})\b/);
-  if (fm) result.flightNum = fm[0].replace(/\s+/g,' ').trim();
+  var fm=u.match(/\b([A-Z]{2})\s*-?\s*(\d{1,4})\b/); if(fm) r.flightNum=fm[0].replace(/\s+/g,' ').trim();
 
-  // Date — DD MMM YYYY or DD MMM YY
-  var d1 = u.match(/(\d{1,2})\s*(JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)\s*(\d{2,4})/);
-  if (d1) { var y=d1[3].length===2?'20'+d1[3]:d1[3]; result.date=y+'-'+String(MONTHS[d1[2]]).padStart(2,'0')+'-'+String(d1[1]).padStart(2,'0'); result.conf.date='high'; }
-
-  // Date — DDMMMYY compact
-  if (!result.date) {
-    var d2 = u.match(/(\d{2})(JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)(\d{2})/);
-    if (d2) { result.date='20'+d2[3]+'-'+String(MONTHS[d2[2]]).padStart(2,'0')+'-'+d2[1]; result.conf.date='high'; }
-  }
-
-  // Date — YYYY-MM-DD ISO
-  if (!result.date) { var d3 = text.match(/(\d{4})-(\d{2})-(\d{2})/); if (d3) { result.date=d3[1]+'-'+d3[2]+'-'+d3[3]; result.conf.date='high'; } }
-
-  // Date — DD/MM/YYYY
-  if (!result.date) { var d4 = text.match(/(\d{2})\/(\d{2})\/(\d{4})/); if (d4) { result.date=d4[3]+'-'+d4[2]+'-'+d4[1]; result.conf.date='med'; } }
+  // Dates
+  var d1=u.match(/(\d{1,2})\s*(JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)\s*(\d{2,4})/);
+  if(d1){var y=d1[3].length===2?'20'+d1[3]:d1[3];r.date=y+'-'+String(M[d1[2]]).padStart(2,'0')+'-'+String(d1[1]).padStart(2,'0');r.conf.date='high';}
+  if(!r.date){var d2=u.match(/(\d{2})(JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)(\d{2})/);if(d2){r.date='20'+d2[3]+'-'+String(M[d2[2]]).padStart(2,'0')+'-'+d2[1];r.conf.date='high';}}
+  if(!r.date){var d3=text.match(/(\d{4})-(\d{2})-(\d{2})/);if(d3){r.date=d3[1]+'-'+d3[2]+'-'+d3[3];r.conf.date='high';}}
+  if(!r.date){var d4=text.match(/(\d{2})\/(\d{2})\/(\d{4})/);if(d4){r.date=d4[3]+'-'+d4[2]+'-'+d4[1];r.conf.date='med';}}
 
   // Airline
-  for (var i=0; i<AIRLINE_MAP.length; i++) {
-    if (AIRLINE_MAP[i][0].test(text)) { result.airline=AIRLINE_MAP[i][1]; result.conf.airline='high'; break; }
-  }
+  for(var i=0;i<AIRLINE_MAP.length;i++){if(AIRLINE_MAP[i][0].test(text)){r.airline=AIRLINE_MAP[i][1];r.conf.airline='high';break;}}
 
-  return result;
+  return r;
 }
 
 function fillForm(parsed) {
-  var n = 0;
-  function fill(id, val, conf) {
-    if (!val) return;
-    var el = document.getElementById(id);
-    el.value = val;
-    el.classList.remove('filled-auto','filled-low');
-    el.classList.add(conf==='high'||conf==='med' ? 'filled-auto' : 'filled-low');
-    n++;
-  }
-  fill('f-from',    parsed.from,      parsed.conf.from);
-  fill('f-to',      parsed.to,        parsed.conf.to);
-  fill('f-airline', parsed.airline,   parsed.conf.airline);
-  fill('f-date',    parsed.date,      parsed.conf.date);
-  fill('f-flightnum', parsed.flightNum, 'high');
+  var n=0;
+  function fill(id,val,conf){if(!val)return;var el=document.getElementById(id);el.value=val;el.classList.remove('filled-auto','filled-low');el.classList.add(conf==='high'||conf==='med'?'filled-auto':'filled-low');n++;}
+  fill('f-from',parsed.from,parsed.conf.from); fill('f-to',parsed.to,parsed.conf.to);
+  fill('f-airline',parsed.airline,parsed.conf.airline); fill('f-date',parsed.date,parsed.conf.date);
+  fill('f-flightnum',parsed.flightNum,'high');
   return n;
 }
 
 function resetForm() {
-  ['f-from','f-to','f-airline','f-date','f-flightnum'].forEach(function(id){
-    var el = document.getElementById(id); el.value=''; el.classList.remove('filled-auto','filled-low');
-  });
+  ['f-from','f-to','f-airline','f-date','f-flightnum'].forEach(function(id){var el=document.getElementById(id);el.value='';el.classList.remove('filled-auto','filled-low');});
   document.getElementById('add-status').style.display='none';
   resetDZ();
 }
 
 // ── Add flight ────────────────────────────────────────────────────────────────
 function addFlight() {
-  var from     = document.getElementById('f-from').value.trim().toUpperCase();
-  var to       = document.getElementById('f-to').value.trim().toUpperCase();
-  var airline  = document.getElementById('f-airline').value.trim();
-  var date     = document.getElementById('f-date').value;
-  var flightNum= document.getElementById('f-flightnum').value.trim();
+  var from=document.getElementById('f-from').value.trim().toUpperCase();
+  var to=document.getElementById('f-to').value.trim().toUpperCase();
+  var airline=document.getElementById('f-airline').value.trim();
+  var date=document.getElementById('f-date').value;
+  var num=document.getElementById('f-flightnum').value.trim();
 
-  if (!AP[from])  { showStatus('add-status','err','Unknown airport: "'+from+'" — check the IATA code'); return; }
-  if (!AP[to])    { showStatus('add-status','err','Unknown airport: "'+to+'" — check the IATA code'); return; }
-  if (from===to)  { showStatus('add-status','err','Origin and destination cannot be the same'); return; }
-  if (!airline)   { showStatus('add-status','err','Please enter an airline name'); return; }
-  if (!date)      { showStatus('add-status','err','Please select a date of travel'); return; }
+  if(!AP[from]){showStatus('add-status','err','Unknown airport: "'+from+'" — check the IATA code');return;}
+  if(!AP[to]){showStatus('add-status','err','Unknown airport: "'+to+'" — check the IATA code');return;}
+  if(from===to){showStatus('add-status','err','Origin and destination cannot be the same');return;}
+  if(!airline){showStatus('add-status','err','Please enter an airline name');return;}
+  if(!date){showStatus('add-status','err','Please select a date of travel');return;}
 
-  var f = { id:String(Date.now()), from:from, to:to, airline:airline, date:date, flightNum:flightNum, km:haversine(AP[from],AP[to]) };
-  document.getElementById('add-btn').disabled = true;
+  var f={id:String(Date.now()),from:from,to:to,airline:airline,date:date,flightNum:num,km:haversine(AP[from],AP[to])};
+  var btn=document.getElementById('add-btn'); btn.disabled=true;
   showStatus('add-status','loading','Saving…');
 
-  saveToSheet(f, function(err){
-    document.getElementById('add-btn').disabled = false;
-    if (err) { showStatus('add-status','err','Could not save: '+err.message); return; }
-    flights.push(f);
-    flights.sort(function(a,b){ return a.date.localeCompare(b.date); });
+  saveToSheet(f,function(err){
+    btn.disabled=false;
+    if(err){showStatus('add-status','err','Could not save: '+err.message);return;}
+    flights.push(f); flights.sort(function(a,b){return a.date.localeCompare(b.date);});
     resetForm();
     showStatus('add-status','ok','✓ Added '+from+' → '+to+' ('+f.km.toLocaleString()+' km)');
     renderAll();
@@ -539,247 +567,144 @@ function addFlight() {
 }
 
 // ── JSONP ─────────────────────────────────────────────────────────────────────
-function jsonpCall(url, params, cb) {
-  var cbName = 'ft_cb_' + Date.now();
-  var script = document.createElement('script');
-  var qs = Object.keys(params).map(function(k){ return k+'='+encodeURIComponent(params[k]); }).join('&');
-  var timer = setTimeout(function(){ cleanup(); cb(new Error('Timeout'),null); }, 12000);
-  function cleanup(){ clearTimeout(timer); delete window[cbName]; if(script.parentNode) script.parentNode.removeChild(script); }
-  window[cbName] = function(data){ cleanup(); cb(null,data); };
-  script.src = url+'?'+qs+'&callback='+cbName+'&t='+Date.now();
-  script.onerror = function(){ cleanup(); cb(new Error('Network error'),null); };
-  document.head.appendChild(script);
+function jsonpCall(url,params,cb){
+  var name='ft_cb_'+Date.now(), s=document.createElement('script');
+  var qs=Object.keys(params).map(function(k){return k+'='+encodeURIComponent(params[k]);}).join('&');
+  var t=setTimeout(function(){cleanup();cb(new Error('Timeout'),null);},12000);
+  function cleanup(){clearTimeout(t);delete window[name];if(s.parentNode)s.parentNode.removeChild(s);}
+  window[name]=function(d){cleanup();cb(null,d);};
+  s.src=url+'?'+qs+'&callback='+name+'&t='+Date.now();
+  s.onerror=function(){cleanup();cb(new Error('Network error'),null);};
+  document.head.appendChild(s);
 }
 
-function loadFromSheet() {
-  if (!SCRIPT_URL) { showBanner('err','⚠ No Sheet URL — paste it in the Google Sheet sync card'); return; }
+function loadFromSheet(){
+  if(!SCRIPT_URL){showBanner('err','⚠ No Sheet URL — paste it in the Google Sheet sync card');return;}
   showBanner('loading','⏳ Loading flights from Google Sheet…');
-  jsonpCall(SCRIPT_URL, {action:'read'}, function(err, data){
-    if (err||!data||!data.ok) { showBanner('err','⚠ Could not load: '+(err?err.message:(data&&data.error)||'unknown')); return; }
-    flights = (data.flights||[]).sort(function(a,b){ return a.date.localeCompare(b.date); });
-    renderAll();
-    showBanner('ok','✓ Loaded '+flights.length+' flights from Sheet');
+  jsonpCall(SCRIPT_URL,{action:'read'},function(err,data){
+    if(err||!data||!data.ok){showBanner('err','⚠ Could not load: '+(err?err.message:(data&&data.error)||'unknown'));return;}
+    flights=(data.flights||[]).sort(function(a,b){return a.date.localeCompare(b.date);});
+    renderAll(); showBanner('ok','✓ Loaded '+flights.length+' flights');
   });
 }
 
-function saveToSheet(f, cb) {
-  if (!SCRIPT_URL) { cb(null); return; }
-  jsonpCall(SCRIPT_URL, {action:'add',id:f.id,from:f.from,to:f.to,airline:f.airline,date:f.date,flightNum:f.flightNum||'',km:f.km}, function(err,data){
-    if (err||!data||!data.ok) cb(err||new Error((data&&data.error)||'Save failed'));
+function saveToSheet(f,cb){
+  if(!SCRIPT_URL){cb(null);return;}
+  jsonpCall(SCRIPT_URL,{action:'add',id:f.id,from:f.from,to:f.to,airline:f.airline,date:f.date,flightNum:f.flightNum||'',km:f.km},function(err,data){
+    if(err||!data||!data.ok)cb(err||new Error((data&&data.error)||'Save failed'));
     else cb(null);
   });
 }
 
-function deleteFromSheet(id) {
-  if (!SCRIPT_URL) return;
-  jsonpCall(SCRIPT_URL, {action:'delete',id:id}, function(){});
+function deleteFromSheet(id){if(!SCRIPT_URL)return;jsonpCall(SCRIPT_URL,{action:'delete',id:id},function(){});}
+
+function connectScript(){
+  var url=document.getElementById('url-input').value.trim();
+  if(!url.includes('script.google.com')||!url.endsWith('/exec')){showStatus('url-status','err','Needs to be a script.google.com URL ending in /exec');return;}
+  showStatus('url-status','loading','Testing connection…');
+  jsonpCall(url,{action:'read'},function(err,data){
+    if(err||!data||!data.ok){showStatus('url-status','err','Failed: '+(err?err.message:(data&&data.error)||'unknown'));return;}
+    SCRIPT_URL=url; localStorage.setItem('ft_script_url',url);
+    flights=(data.flights||[]).sort(function(a,b){return a.date.localeCompare(b.date);});
+    updateSheetUI(); renderAll(); showBanner('ok','✓ Connected — '+flights.length+' flights loaded');
+  });
 }
 
-// ── Sheet connect/disconnect ──────────────────────────────────────────────────
-function updateSheetUI() {
-  var tag = document.getElementById('sheet-tag');
-  var conn = document.getElementById('sheet-connected');
-  var disc = document.getElementById('sheet-disconnected');
-  var disp = document.getElementById('sheet-url-display');
-  if (SCRIPT_URL) {
+function clearScript(){if(!confirm('Disconnect?'))return;localStorage.removeItem('ft_script_url');SCRIPT_URL='';updateSheetUI();}
+
+function updateSheetUI(){
+  var tag=document.getElementById('sheet-tag'),conn=document.getElementById('sheet-connected'),disc=document.getElementById('sheet-disconnected');
+  if(SCRIPT_URL){
     tag.textContent='✓ Connected'; tag.style.cssText='background:var(--green-bg);color:var(--green);border:1px solid var(--green-border);font-size:11px;font-weight:500;padding:3px 10px;border-radius:20px;font-family:"DM Mono",monospace;';
     conn.style.display='block'; disc.style.display='none';
-    disp.textContent = SCRIPT_URL.slice(0,60)+'…';
+    document.getElementById('sheet-url-display').textContent=SCRIPT_URL.slice(0,60)+'…';
   } else {
     tag.textContent='Not connected'; tag.style.cssText='background:var(--red-bg);color:var(--red);border:1px solid var(--red-border);font-size:11px;font-weight:500;padding:3px 10px;border-radius:20px;font-family:"DM Mono",monospace;';
     conn.style.display='none'; disc.style.display='block';
   }
 }
 
-function connectScript() {
-  var url = document.getElementById('url-input').value.trim();
-  if (!url.includes('script.google.com')||!url.endsWith('/exec')) { showStatus('url-status','err','Needs to be a script.google.com URL ending in /exec'); return; }
-  showStatus('url-status','loading','Testing connection…');
-  jsonpCall(url, {action:'read'}, function(err, data){
-    if (err||!data||!data.ok) { showStatus('url-status','err','Failed: '+(err?err.message:(data&&data.error)||'unknown')); return; }
-    SCRIPT_URL = url; localStorage.setItem('ft_script_url', url);
-    flights = (data.flights||[]).sort(function(a,b){ return a.date.localeCompare(b.date); });
-    updateSheetUI(); renderAll();
-    showBanner('ok','✓ Connected — '+flights.length+' flights loaded');
-  });
-}
-
-function clearScript() {
-  if (!confirm('Disconnect from Google Sheet?')) return;
-  localStorage.removeItem('ft_script_url'); SCRIPT_URL='';
-  updateSheetUI();
-}
-
 // ── Helpers ───────────────────────────────────────────────────────────────────
-function rkey(f){ return [f.from,f.to].sort().join('-'); }
-
-function haversine(a,b){
-  var R=6371,dL=(b.lat-a.lat)*Math.PI/180,dO=(b.lon-a.lon)*Math.PI/180;
-  var s=Math.sin(dL/2)*Math.sin(dL/2)+Math.cos(a.lat*Math.PI/180)*Math.cos(b.lat*Math.PI/180)*Math.sin(dO/2)*Math.sin(dO/2);
-  return Math.round(2*R*Math.asin(Math.sqrt(s)));
-}
-
-function fmtDate(d){
-  if(!d) return '';
-  try{ return new Date(d+'T12:00:00').toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}); }
-  catch(e){ return d; }
-}
-
-function showStatus(id,type,msg){
-  var el=document.getElementById(id);
-  el.className='status '+type; el.textContent=msg;
-  if(type!=='loading') setTimeout(function(){ el.style.display='none'; el.className='status'; },4000);
-}
-
-function showBanner(type,msg){
-  var b=document.getElementById('load-banner');
-  b.textContent=msg; b.className='load-banner '+type;
-  if(type!=='loading') setTimeout(function(){ b.style.display='none'; },4000);
-}
-
-function deleteFlight(id){
-  if(!confirm('Remove this flight?')) return;
-  deleteFromSheet(id);
-  flights=flights.filter(function(f){ return f.id!==id; });
-  renderAll();
-}
+function rkey(f){return [f.from,f.to].sort().join('-');}
+function haversine(a,b){var R=6371,dL=(b.lat-a.lat)*Math.PI/180,dO=(b.lon-a.lon)*Math.PI/180;var s=Math.sin(dL/2)*Math.sin(dL/2)+Math.cos(a.lat*Math.PI/180)*Math.cos(b.lat*Math.PI/180)*Math.sin(dO/2)*Math.sin(dO/2);return Math.round(2*R*Math.asin(Math.sqrt(s)));}
+function fmtDate(d){if(!d)return '';try{return new Date(d+'T12:00:00').toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});}catch(e){return d;}}
+function showStatus(id,type,msg){var el=document.getElementById(id);el.className='status '+type;el.textContent=msg;if(type!=='loading')setTimeout(function(){el.style.display='none';el.className='status';},4000);}
+function showBanner(type,msg){var b=document.getElementById('load-banner');b.textContent=msg;b.className='load-banner '+type;if(type!=='loading')setTimeout(function(){b.style.display='none';},4000);}
+function deleteFlight(id){if(!confirm('Remove this flight?'))return;deleteFromSheet(id);flights=flights.filter(function(f){return f.id!==id;});renderAll();}
 
 // ── Render ────────────────────────────────────────────────────────────────────
-function renderAll(){ renderLog(); renderStats(); if(map) drawMap(); }
+function renderAll(){renderLog();renderStats();if(map)drawMap();}
 
 function renderLog(){
-  var q = ((document.getElementById('log-search')||{}).value||'').toLowerCase();
-  var thickness={};
-  flights.forEach(function(f){ var k=rkey(f); thickness[k]=(thickness[k]||0)+1; });
-  var list=flights.filter(function(f){
-    return !q||f.from.toLowerCase().includes(q)||f.to.toLowerCase().includes(q)||
-      f.airline.toLowerCase().includes(q)||f.date.includes(q)||(f.flightNum||'').toLowerCase().includes(q);
-  }).slice().reverse();
-
+  var q=((document.getElementById('log-search')||{}).value||'').toLowerCase();
+  var th={};flights.forEach(function(f){var k=rkey(f);th[k]=(th[k]||0)+1;});
+  var list=flights.filter(function(f){return !q||f.from.toLowerCase().includes(q)||f.to.toLowerCase().includes(q)||f.airline.toLowerCase().includes(q)||f.date.includes(q)||(f.flightNum||'').toLowerCase().includes(q);}).slice().reverse();
   document.getElementById('log-empty').style.display=flights.length?'none':'block';
   document.getElementById('log-content').style.display=flights.length?'block':'none';
-  if(!flights.length) return;
-
+  if(!flights.length)return;
   document.getElementById('flight-list').innerHTML=list.map(function(f){
-    var k=rkey(f),cnt=thickness[k]||1;
-    return '<div class="flight-row">'
-      +'<div><div class="flight-route"><span>'+f.from+'</span><span class="arrow">──→</span><span>'+f.to+'</span>'
-      +(cnt>1?'<span class="count-badge">×'+cnt+'</span>':'')+'</div>'
-      +'<div class="flight-meta"><span class="al">'+f.airline+'</span>'
-      +(f.flightNum?' · '+f.flightNum:'')
-      +' · '+fmtDate(f.date)+'</div></div>'
-      +'<div class="flight-right"><span class="flight-km">'+f.km.toLocaleString()+' km</span>'
-      +'<button class="del-btn" onclick="deleteFlight(\''+f.id+'\')">✕</button></div>'
-      +'</div>';
+    var k=rkey(f),cnt=th[k]||1;
+    return '<div class="flight-row"><div><div class="flight-route"><span>'+f.from+'</span><span class="arrow">──→</span><span>'+f.to+'</span>'+(cnt>1?'<span class="count-badge">×'+cnt+'</span>':'')+'</div><div class="flight-meta"><span class="al">'+f.airline+'</span>'+(f.flightNum?' · '+f.flightNum:'')+' · '+fmtDate(f.date)+'</div></div><div class="flight-right"><span class="flight-km">'+f.km.toLocaleString()+' km</span><button class="del-btn" onclick="deleteFlight(\''+f.id+'\')">✕</button></div></div>';
   }).join('');
 }
 
 function renderStats(){
-  var hasFl=flights.length>0;
-  document.getElementById('stats-empty').style.display=hasFl?'none':'block';
-  document.getElementById('stats-content').style.display=hasFl?'block':'none';
-  if(!hasFl) return;
-
-  var km=flights.reduce(function(s,f){ return s+f.km; },0);
-  var aps=new Set(flights.flatMap(function(f){ return [f.from,f.to]; }));
-  var ctrs=new Set(flights.flatMap(function(f){ return [AP[f.from]&&AP[f.from].c, AP[f.to]&&AP[f.to].c].filter(Boolean); }));
-
+  var has=flights.length>0;
+  document.getElementById('stats-empty').style.display=has?'none':'block';
+  document.getElementById('stats-content').style.display=has?'block':'none';
+  if(!has)return;
+  var km=flights.reduce(function(s,f){return s+f.km;},0);
+  var aps=new Set(flights.flatMap(function(f){return[f.from,f.to];}));
+  var ctrs=new Set(flights.flatMap(function(f){return[AP[f.from]&&AP[f.from].c,AP[f.to]&&AP[f.to].c].filter(Boolean);}));
   document.getElementById('stats-metrics').innerHTML=
     '<div class="metric"><div class="metric-label">Total flights</div><div class="metric-value">'+flights.length+'</div><div class="metric-sub">legs flown</div></div>'+
     '<div class="metric"><div class="metric-label">Km flown</div><div class="metric-value">'+km.toLocaleString()+'</div><div class="metric-sub">'+(km/40075).toFixed(1)+'× Earth</div></div>'+
     '<div class="metric"><div class="metric-label">Airports</div><div class="metric-value">'+aps.size+'</div><div class="metric-sub">unique</div></div>'+
     '<div class="metric"><div class="metric-label">Countries</div><div class="metric-value">'+ctrs.size+'</div><div class="metric-sub">visited</div></div>';
-
-  var aC={};flights.forEach(function(f){ aC[f.airline]=(aC[f.airline]||0)+1; });
-  var sA=Object.entries(aC).sort(function(a,b){ return b[1]-a[1]; }),mA=sA[0]?sA[0][1]:1;
-  document.getElementById('airline-bars').innerHTML=sA.map(function(e){
-    return '<div class="bar-row"><div class="bar-meta"><span class="bar-name">'+e[0]+'</span><span class="bar-val">'+e[1]+'</span></div>'
-      +'<div class="bar-bg"><div class="bar-fill" style="width:'+(e[1]/mA*100).toFixed(0)+'%"></div></div></div>';
-  }).join('');
-
-  var rC={};flights.forEach(function(f){ var k=f.from+'→'+f.to; rC[k]=(rC[k]||0)+1; });
-  var sR=Object.entries(rC).sort(function(a,b){ return b[1]-a[1]; }).slice(0,5),mR=sR[0]?sR[0][1]:1;
-  document.getElementById('route-bars').innerHTML=sR.map(function(e){
-    return '<div class="bar-row"><div class="bar-meta"><span class="bar-name" style="font-family:\'DM Mono\',monospace">'+e[0]+'</span><span class="bar-val">'+e[1]+'</span></div>'
-      +'<div class="bar-bg"><div class="bar-fill bar-fill-alt" style="width:'+(e[1]/mR*100).toFixed(0)+'%"></div></div></div>';
-  }).join('')||'<div style="font-size:13px;color:var(--text3)">No data</div>';
-
+  var aC={};flights.forEach(function(f){aC[f.airline]=(aC[f.airline]||0)+1;});var sA=Object.entries(aC).sort(function(a,b){return b[1]-a[1];}),mA=sA[0]?sA[0][1]:1;
+  document.getElementById('airline-bars').innerHTML=sA.map(function(e){return'<div class="bar-row"><div class="bar-meta"><span class="bar-name">'+e[0]+'</span><span class="bar-val">'+e[1]+'</span></div><div class="bar-bg"><div class="bar-fill" style="width:'+(e[1]/mA*100).toFixed(0)+'%"></div></div></div>';}).join('');
+  var rC={};flights.forEach(function(f){var k=f.from+'→'+f.to;rC[k]=(rC[k]||0)+1;});var sR=Object.entries(rC).sort(function(a,b){return b[1]-a[1];}).slice(0,5),mR=sR[0]?sR[0][1]:1;
+  document.getElementById('route-bars').innerHTML=sR.map(function(e){return'<div class="bar-row"><div class="bar-meta"><span class="bar-name" style="font-family:\'DM Mono\',monospace">'+e[0]+'</span><span class="bar-val">'+e[1]+'</span></div><div class="bar-bg"><div class="bar-fill bar-fill-alt" style="width:'+(e[1]/mR*100).toFixed(0)+'%"></div></div></div>';}).join('')||'<div style="font-size:13px;color:var(--text3)">No data</div>';
   document.getElementById('countries-list').textContent=[...ctrs].sort().join(' · ')||'—';
 }
 
 // ── Map ───────────────────────────────────────────────────────────────────────
-function initMap(){
-  if(map) return;
-  map=L.map('map',{center:[20,20],zoom:2});
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© <a href="https://openstreetmap.org/copyright">OpenStreetMap</a>',maxZoom:18}).addTo(map);
-}
-
-function greatCirclePoints(a,b){
-  var toR=function(d){ return d*Math.PI/180; },toDeg=function(r){ return r*180/Math.PI; };
-  var la1=toR(a.lat),lo1=toR(a.lon),la2=toR(b.lat),lo2=toR(b.lon);
-  var d=Math.acos(Math.max(-1,Math.min(1,Math.sin(la1)*Math.sin(la2)+Math.cos(la1)*Math.cos(la2)*Math.cos(lo2-lo1))));
-  var pts=[];
-  for(var i=0;i<=80;i++){
-    var t=i/80,sinD=Math.sin(d);
-    var A=sinD<1e-4?1-t:Math.sin((1-t)*d)/sinD,B=sinD<1e-4?t:Math.sin(t*d)/sinD;
-    var x=A*Math.cos(la1)*Math.cos(lo1)+B*Math.cos(la2)*Math.cos(lo2);
-    var y=A*Math.cos(la1)*Math.sin(lo1)+B*Math.cos(la2)*Math.sin(lo2);
-    var z=A*Math.sin(la1)+B*Math.sin(la2);
-    pts.push([toDeg(Math.atan2(z,Math.sqrt(x*x+y*y))),toDeg(Math.atan2(y,x))]);
-  }
-  var segs=[[]];segs[0].push(pts[0]);
-  for(var i=1;i<pts.length;i++){ if(Math.abs(pts[i][1]-pts[i-1][1])>180) segs.push([]); segs[segs.length-1].push(pts[i]); }
-  return segs;
-}
+function initMap(){if(map)return;map=L.map('map',{center:[20,20],zoom:2});L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© <a href="https://openstreetmap.org/copyright">OpenStreetMap</a>',maxZoom:18}).addTo(map);}
+function gcPoints(a,b){var toR=function(d){return d*Math.PI/180;},toDeg=function(r){return r*180/Math.PI;};var la1=toR(a.lat),lo1=toR(a.lon),la2=toR(b.lat),lo2=toR(b.lon);var d=Math.acos(Math.max(-1,Math.min(1,Math.sin(la1)*Math.sin(la2)+Math.cos(la1)*Math.cos(la2)*Math.cos(lo2-lo1))));var pts=[];for(var i=0;i<=80;i++){var t=i/80,sD=Math.sin(d),A=sD<1e-4?1-t:Math.sin((1-t)*d)/sD,B=sD<1e-4?t:Math.sin(t*d)/sD;var x=A*Math.cos(la1)*Math.cos(lo1)+B*Math.cos(la2)*Math.cos(lo2),y=A*Math.cos(la1)*Math.sin(lo1)+B*Math.cos(la2)*Math.sin(lo2),z=A*Math.sin(la1)+B*Math.sin(la2);pts.push([toDeg(Math.atan2(z,Math.sqrt(x*x+y*y))),toDeg(Math.atan2(y,x))]);}var segs=[[]];segs[0].push(pts[0]);for(var i=1;i<pts.length;i++){if(Math.abs(pts[i][1]-pts[i-1][1])>180)segs.push([]);segs[segs.length-1].push(pts[i]);}return segs;}
 
 function drawMap(){
-  arcLayers.forEach(function(l){ map.removeLayer(l); });
-  dotLayers.forEach(function(l){ map.removeLayer(l); });
-  arcLayers=[]; dotLayers=[];
-  var thickness={};
-  flights.forEach(function(f){ var k=rkey(f); thickness[k]=(thickness[k]||0)+1; });
-  var drawn=new Set(),drawnAP=new Set();
+  arcLayers.forEach(function(l){map.removeLayer(l);});dotLayers.forEach(function(l){map.removeLayer(l);});arcLayers=[];dotLayers=[];
+  var th={};flights.forEach(function(f){var k=rkey(f);th[k]=(th[k]||0)+1;});
+  var dr=new Set(),da=new Set();
   flights.forEach(function(f){
-    var key=rkey(f),a=AP[f.from],b=AP[f.to]; if(!a||!b) return;
-    if(!drawn.has(key)){
-      drawn.add(key);
-      var cnt=thickness[key]||1,isHL=highlightKey===key;
-      greatCirclePoints(a,b).forEach(function(seg){
-        if(seg.length<2) return;
+    var key=rkey(f),a=AP[f.from],b=AP[f.to];if(!a||!b)return;
+    if(!dr.has(key)){dr.add(key);var cnt=th[key]||1,isHL=highlightKey===key;
+      gcPoints(a,b).forEach(function(seg){if(seg.length<2)return;
         var line=L.polyline(seg,{color:isHL?'#f5c842':'#89b4fa',weight:Math.min(isHL?cnt*2.5+2:cnt*1.5+1,9),opacity:Math.min(isHL?0.95:0.5+cnt*0.1,0.9)}).addTo(map);
-        var als=[...new Set(flights.filter(function(x){ return rkey(x)===key; }).map(function(x){ return x.airline; }))].join(', ');
+        var als=[...new Set(flights.filter(function(x){return rkey(x)===key;}).map(function(x){return x.airline;}))].join(', ');
         line.bindTooltip('<strong>'+f.from+' → '+f.to+'</strong><br>'+cnt+' flight'+(cnt>1?'s':'')+' · '+als,{sticky:true});
-        line.on('click',function(){ highlightKey=highlightKey===key?null:key; drawMap(); });
-        arcLayers.push(line);
-      });
-    }
-    [f.from,f.to].forEach(function(code){
-      if(drawnAP.has(code)) return; drawnAP.add(code);
-      var ap=AP[code]; if(!ap) return;
-      var isHLd=highlightKey&&flights.some(function(x){ return rkey(x)===highlightKey&&(x.from===code||x.to===code); });
+        line.on('click',function(){highlightKey=highlightKey===key?null:key;drawMap();});arcLayers.push(line);});}
+    [f.from,f.to].forEach(function(code){if(da.has(code))return;da.add(code);var ap=AP[code];if(!ap)return;
+      var isHLd=highlightKey&&flights.some(function(x){return rkey(x)===highlightKey&&(x.from===code||x.to===code);});
       var dot=L.circleMarker([ap.lat,ap.lon],{radius:5,fillColor:isHLd?'#f5c842':'#89b4fa',fillOpacity:1,color:'#0f0f0f',weight:2}).addTo(map);
-      var cnt=flights.filter(function(x){ return x.from===code||x.to===code; }).length;
-      dot.bindTooltip('<strong>'+code+'</strong> · '+ap.n+'<br>'+cnt+' flight'+(cnt!==1?'s':''),{sticky:true});
-      dotLayers.push(dot);
-    });
+      var cnt=flights.filter(function(x){return x.from===code||x.to===code;}).length;
+      dot.bindTooltip('<strong>'+code+'</strong> · '+ap.n+'<br>'+cnt+' flight'+(cnt!==1?'s':''),{sticky:true});dotLayers.push(dot);});
   });
 }
 
-// ── Navigation ────────────────────────────────────────────────────────────────
-function showPage(name, btn){
-  document.querySelectorAll('.page').forEach(function(p){ p.classList.remove('active'); });
-  document.querySelectorAll('.nav-tab,.mobile-tab').forEach(function(b){ b.classList.remove('active'); });
+// ── Nav ───────────────────────────────────────────────────────────────────────
+function showPage(name,btn){
+  document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
+  document.querySelectorAll('.nav-tab,.mobile-tab').forEach(function(b){b.classList.remove('active');});
   document.getElementById('page-'+name).classList.add('active');
-  document.querySelectorAll('.nav-tab,.mobile-tab').forEach(function(b){
-    if(b.getAttribute('onclick')&&b.getAttribute('onclick').includes("'"+name+"'")) b.classList.add('active');
-  });
-  if(name==='map'){ initMap(); setTimeout(function(){ map.invalidateSize(); drawMap(); },100); }
-  if(name==='log') renderLog();
+  document.querySelectorAll('.nav-tab,.mobile-tab').forEach(function(b){if(b.getAttribute('onclick')&&b.getAttribute('onclick').includes("'"+name+"'"))b.classList.add('active');});
+  if(name==='map'){initMap();setTimeout(function(){map.invalidateSize();drawMap();},100);}
+  if(name==='log')renderLog();
 }
 
 // ── Init ──────────────────────────────────────────────────────────────────────
 updateSheetUI();
-if(SCRIPT_URL) loadFromSheet();
+if(SCRIPT_URL)loadFromSheet();
 else document.getElementById('load-banner').style.display='none';
 </script>
 </body>
