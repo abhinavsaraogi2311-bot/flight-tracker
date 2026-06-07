@@ -1,4 +1,4 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -332,6 +332,17 @@ function parseSheetDate(raw) {
   return d.getUTCFullYear() + '-' +
     String(d.getUTCMonth() + 1).padStart(2, '0') + '-' +
     String(d.getUTCDate()).padStart(2, '0');
+}
+
+function fmtDate(d) {
+  if (!d) return '—';
+  var clean = parseSheetDate(d);
+  if (!clean || !/^\d{4}-\d{2}-\d{2}$/.test(clean)) return clean || '—';
+  try {
+    return new Date(clean + 'T12:00:00').toLocaleDateString('en-IN', {
+      day: 'numeric', month: 'short', year: 'numeric'
+    });
+  } catch(e) { return clean; }
 }
 
 // ── Sheet API ─────────────────────────────────────────────────────────────────
