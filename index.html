@@ -23,7 +23,6 @@
 }
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
-
 nav{display:flex;align-items:center;justify-content:space-between;padding:16px 24px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--bg);z-index:100;}
 .nav-logo{font-size:15px;font-weight:600;display:flex;align-items:center;gap:8px;}
 .nav-logo span{color:var(--accent);}
@@ -35,21 +34,15 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:16px 2
 .nav-sheet:hover{color:var(--text2);}
 .sync-btn{font-size:12px;color:var(--text3);background:none;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;padding:0;}
 .sync-btn:hover{color:var(--text2);}
-
 .page{display:none;padding:24px;max-width:800px;margin:0 auto;}
 .page.active{display:block;}
 .page-map{display:none;height:calc(100vh - 57px);padding:0;max-width:none;}
 .page-map.active{display:flex;flex-direction:column;}
-
 .card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:14px;}
 .card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;}
 .card-title{font-size:14px;font-weight:600;}
 .tag{font-size:11px;font-weight:500;padding:3px 10px;border-radius:20px;font-family:'DM Mono',monospace;}
 .tag-blue{background:var(--blue-bg);color:var(--blue);border:1px solid rgba(137,180,250,0.2);}
-.tag-green{background:var(--green-bg);color:var(--green);border:1px solid var(--green-border);}
-.tag-amber{background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-border);}
-
-/* Drop zone */
 .drop-zone{border:2px dashed rgba(137,180,250,0.25);border-radius:var(--radius);padding:28px 20px;text-align:center;cursor:pointer;transition:all 0.2s;position:relative;display:block;}
 .drop-zone:hover,.drop-zone.drag-over{border-color:var(--blue);background:var(--blue-bg);}
 .drop-zone.scanning{border-color:var(--amber);background:var(--amber-bg);pointer-events:none;}
@@ -64,37 +57,29 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:16px 2
 .method-badge{position:absolute;top:10px;right:12px;font-size:9px;font-family:'DM Mono',monospace;padding:2px 7px;border-radius:10px;font-weight:600;display:none;}
 .method-badge.pdf{background:rgba(137,180,250,0.15);color:var(--blue);}
 .method-badge.ocr{background:rgba(245,200,66,0.15);color:var(--amber);}
-
 .ocr-preview{margin-top:10px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px 10px;font-size:10px;font-family:'DM Mono',monospace;color:var(--text3);max-height:56px;overflow-y:auto;line-height:1.5;display:none;}
-
 .divider{display:flex;align-items:center;gap:12px;margin:16px 0;color:var(--text3);font-size:12px;}
 .divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border);}
-
 .field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
 label.lbl{font-size:11px;color:var(--text3);display:block;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.5px;}
 input[type=text],input[type=date]{width:100%;padding:9px 12px;font-size:13px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg3);color:var(--text);font-family:'DM Sans',sans-serif;outline:none;transition:border-color 0.15s,background 0.15s;}
 input[type=text]::placeholder{color:var(--text3);}
 input.filled-auto{border-color:rgba(168,230,163,0.4);background:rgba(168,230,163,0.04);}
 input.filled-low{border-color:rgba(245,200,66,0.4);background:rgba(245,200,66,0.04);}
-
 .btn{padding:10px 20px;font-size:13px;font-weight:600;border-radius:var(--radius-sm);cursor:pointer;border:none;font-family:'DM Sans',sans-serif;transition:all 0.15s;}
 .btn-primary{background:var(--accent);color:#0f0f0f;}
 .btn-primary:hover{opacity:0.88;}
 .btn-primary:disabled{opacity:0.4;cursor:not-allowed;}
 .btn-sm{padding:6px 14px;font-size:12px;}
-.btn-danger{background:var(--red-bg);color:var(--red);border:1px solid var(--red-border);}
-
 .status{font-size:12px;padding:10px 14px;border-radius:var(--radius-sm);margin-top:12px;display:none;font-family:'DM Mono',monospace;}
 .status.ok{background:var(--green-bg);color:var(--green);border:1px solid var(--green-border);display:block;}
 .status.err{background:var(--red-bg);color:var(--red);border:1px solid var(--red-border);display:block;}
 .status.loading{background:var(--blue-bg);color:var(--blue);border:1px solid rgba(137,180,250,0.2);display:block;}
-
 .metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:16px;}
 .metric{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:16px;}
 .metric-label{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;}
 .metric-value{font-size:22px;font-weight:600;font-family:'DM Mono',monospace;}
 .metric-sub{font-size:11px;color:var(--text3);margin-top:3px;}
-
 .flight-list{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;}
 .flight-row{display:flex;align-items:center;justify-content:space-between;padding:12px 18px;border-bottom:1px solid var(--border);}
 .flight-row:last-child{border-bottom:none;}
@@ -108,7 +93,6 @@ input.filled-low{border-color:rgba(245,200,66,0.4);background:rgba(245,200,66,0.
 .count-badge{font-size:10px;background:rgba(137,180,250,0.15);color:var(--blue);padding:2px 7px;border-radius:10px;}
 .del-btn{background:none;border:none;color:var(--text3);cursor:pointer;font-size:13px;padding:2px 4px;border-radius:4px;}
 .del-btn:hover{color:var(--red);background:var(--red-bg);}
-
 .bar-row{margin-bottom:10px;}
 .bar-meta{display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;}
 .bar-name{color:var(--text2);}
@@ -118,23 +102,18 @@ input.filled-low{border-color:rgba(245,200,66,0.4);background:rgba(245,200,66,0.
 .bar-fill-alt{background:var(--amber);}
 .section-box{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;margin-bottom:14px;}
 .section-label{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:14px;}
-
 .empty{text-align:center;padding:52px 20px;color:var(--text3);}
 .empty-icon{font-size:28px;margin-bottom:10px;opacity:0.3;}
-.empty p{font-size:14px;} .empty span{font-size:12px;margin-top:5px;display:block;}
-
+.empty p{font-size:14px;}.empty span{font-size:12px;margin-top:5px;display:block;}
 #map{flex:1;min-height:0;}
 .map-hint{text-align:center;padding:8px;font-size:11px;color:var(--text3);background:var(--bg);border-top:1px solid var(--border);}
-
 .load-banner{position:fixed;top:0;left:0;right:0;z-index:200;padding:10px 20px;font-size:13px;font-family:'DM Mono',monospace;text-align:center;display:none;}
 .load-banner.loading{background:#1a1a2e;color:var(--blue);border-bottom:1px solid rgba(137,180,250,0.2);display:block;}
 .load-banner.ok{background:#0d1f0d;color:var(--green);border-bottom:1px solid rgba(168,230,163,0.2);display:block;}
 .load-banner.err{background:#1f0d0d;color:var(--red);border-bottom:1px solid rgba(240,152,152,0.2);display:block;}
-
 .mobile-tabs{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--bg2);border-top:1px solid var(--border);padding:8px 0 14px;z-index:100;justify-content:space-around;}
 .mobile-tab{display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;border:none;background:none;color:var(--text3);font-family:'DM Sans',sans-serif;font-size:10px;padding:4px 16px;}
 .mobile-tab.active{color:var(--accent);}
-
 @media(max-width:600px){
   nav{padding:12px 16px;}.nav-tabs{display:none;}.nav-right{display:none;}
   .mobile-tabs{display:flex;}.page{padding:14px 14px 90px;}.field-row{grid-template-columns:1fr;}
@@ -144,7 +123,7 @@ input.filled-low{border-color:rgba(245,200,66,0.4);background:rgba(245,200,66,0.
 </head>
 <body>
 
-<div id="load-banner" class="load-banner loading">⏳ Loading flights from Google Sheet…</div>
+<div id="load-banner" class="load-banner loading">⏳ Loading flights…</div>
 
 <nav>
   <div class="nav-logo">✈ <span>Flight</span>Tracker</div>
@@ -156,9 +135,8 @@ input.filled-low{border-color:rgba(245,200,66,0.4);background:rgba(245,200,66,0.
   </div>
   <div class="nav-right">
     <button class="sync-btn" onclick="loadFromSheet()">↻ Sync</button>
-    <a class="nav-sheet" id="sheet-link" href="https://docs.google.com/spreadsheets/d/1O5cGJrv70xOiqQB-SFuNUvJtfwX5FyWbkDmhSnqIWfg/edit" target="_blank">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
-      Sheet
+    <a class="nav-sheet" href="https://docs.google.com/spreadsheets/d/1O5cGJrv70xOiqQB-SFuNUvJtfwX5FyWbkDmhSnqIWfg/edit" target="_blank">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>Sheet
     </a>
   </div>
 </nav>
@@ -180,13 +158,11 @@ input.filled-low{border-color:rgba(245,200,66,0.4);background:rgba(245,200,66,0.
 
 <!-- ADD PAGE -->
 <div class="page active" id="page-add">
-
   <div class="card">
     <div class="card-header">
       <span class="card-title">Scan boarding pass</span>
       <span class="tag tag-blue">PDF · Image · OCR</span>
     </div>
-
     <label id="drop-zone" class="drop-zone"
       ondragover="event.preventDefault();this.classList.add('drag-over')"
       ondragleave="this.classList.remove('drag-over')"
@@ -194,22 +170,18 @@ input.filled-low{border-color:rgba(245,200,66,0.4);background:rgba(245,200,66,0.
       <input type="file" id="bp-file" accept="image/*,.pdf,application/pdf" style="display:none" onchange="handleFile(event)">
       <span class="dz-icon" id="dz-icon">🎫</span>
       <div class="dz-title" id="dz-title">Upload boarding pass</div>
-      <div class="dz-sub" id="dz-sub">PDF (e-ticket) or photo/screenshot · processed locally, nothing uploaded</div>
+      <div class="dz-sub" id="dz-sub">PDF (e-ticket) or photo/screenshot · processed locally</div>
       <div class="ocr-progress" id="ocr-progress"></div>
       <div class="ocr-bar" id="ocr-bar"><div class="ocr-bar-fill" id="ocr-bar-fill"></div></div>
       <span class="method-badge" id="method-badge"></span>
     </label>
-
     <div class="ocr-preview" id="ocr-preview"></div>
-
     <div class="divider">review &amp; confirm details</div>
-
     <div style="display:flex;align-items:center;gap:6px;margin-bottom:12px;flex-wrap:wrap;">
       <span style="font-size:12px;color:var(--text3);">Auto-filled:</span>
       <span style="font-size:11px;padding:2px 8px;border-radius:10px;background:var(--green-bg);color:var(--green);border:1px solid var(--green-border);">green = confident</span>
       <span style="font-size:11px;padding:2px 8px;border-radius:10px;background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-border);">amber = check</span>
     </div>
-
     <div class="field-row">
       <div><label class="lbl">From (IATA)</label><input type="text" id="f-from" maxlength="3" placeholder="BLR" oninput="this.value=this.value.toUpperCase();this.classList.remove('filled-auto','filled-low')"></div>
       <div><label class="lbl">To (IATA)</label><input type="text" id="f-to" maxlength="3" placeholder="LHR" oninput="this.value=this.value.toUpperCase();this.classList.remove('filled-auto','filled-low')"></div>
@@ -219,23 +191,13 @@ input.filled-low{border-color:rgba(245,200,66,0.4);background:rgba(245,200,66,0.
       <div><label class="lbl">Date of travel</label><input type="date" id="f-date" oninput="this.classList.remove('filled-auto','filled-low')"></div>
     </div>
     <div><label class="lbl">Flight number (optional)</label><input type="text" id="f-flightnum" placeholder="6E 123" style="max-width:200px" oninput="this.classList.remove('filled-auto','filled-low')"></div>
-
     <div style="display:flex;justify-content:flex-end;margin-top:16px;gap:10px;">
       <button class="btn btn-sm" onclick="resetForm()" style="background:none;border:1px solid var(--border);color:var(--text2);">Clear</button>
       <button class="btn btn-primary" id="add-btn" onclick="addFlight()">Add flight →</button>
     </div>
     <div class="status" id="add-status"></div>
   </div>
-
 </div>
-
-<!-- Hidden stubs for JS refs (URL hardcoded, no setup card needed) -->
-<span id="sheet-tag" style="display:none"></span>
-<div id="sheet-connected" style="display:none"></div>
-<div id="sheet-disconnected" style="display:none"></div>
-<div id="sheet-url-display" style="display:none"></div>
-<input id="url-input" style="display:none">
-<div id="url-status" style="display:none"></div>
 
 <!-- LOG PAGE -->
 <div class="page" id="page-log">
@@ -266,10 +228,8 @@ input.filled-low{border-color:rgba(245,200,66,0.4);background:rgba(245,200,66,0.
 <script>
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-// ── Config ────────────────────────────────────────────────────────────────────
-// ── YOUR APPS SCRIPT URL — hardcoded so it works on every device automatically ──
-var HARDCODED_URL = 'https://script.google.com/macros/s/AKfycbxMwXp8ehhanr4D2edrqsLn3gI8qhAw5OIOpD7hbEZsHkBf3o-d9NhOO-wD9JLPN_ktkg/exec';
-var SCRIPT_URL = HARDCODED_URL || localStorage.getItem('ft_script_url') || '';
+// ── YOUR SCRIPT URL — hardcoded, works on every device automatically ──────────
+var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx6VQfT9WPbY0Atq1EBWK0UBtuSgJUOyLT9SqM0ZVnTxcE0miW2rcjdT68rdjl0jv4_zQ/exec';
 
 // ── Airports ──────────────────────────────────────────────────────────────────
 var AP = {
@@ -334,288 +294,158 @@ var AIRLINE_MAP = [
 
 var flights = [], map = null, arcLayers = [], dotLayers = [], highlightKey = null;
 
-// ── PDF text extraction ───────────────────────────────────────────────────────
+// ── Sheet API — plain fetch, no JSONP ─────────────────────────────────────────
+function sheetGet(params) {
+  var qs = Object.keys(params).map(function(k){
+    return encodeURIComponent(k) + '=' + encodeURIComponent(params[k]);
+  }).join('&');
+  return fetch(SCRIPT_URL + '?' + qs)
+    .then(function(r) {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json();
+    });
+}
+
+function loadFromSheet() {
+  showBanner('loading', '⏳ Loading flights…');
+  sheetGet({ action: 'read' })
+    .then(function(data) {
+      if (!data.ok) throw new Error(data.error || 'Read failed');
+      flights = (data.flights || []).sort(function(a,b){ return a.date.localeCompare(b.date); });
+      renderAll();
+      showBanner('ok', '✓ ' + flights.length + ' flight' + (flights.length !== 1 ? 's' : '') + ' loaded');
+    })
+    .catch(function(e) {
+      showBanner('err', '⚠ Could not load: ' + e.message);
+    });
+}
+
+function saveToSheet(f, cb) {
+  sheetGet({ action:'add', id:f.id, from:f.from, to:f.to, airline:f.airline, date:f.date, flightNum:f.flightNum||'', km:f.km })
+    .then(function(data) {
+      if (!data.ok) throw new Error(data.error || 'Save failed');
+      cb(null);
+    })
+    .catch(function(e) { cb(e); });
+}
+
+function deleteFromSheet(id) {
+  sheetGet({ action:'delete', id:id }).catch(function(){});
+}
+
+// ── PDF + OCR scanning ────────────────────────────────────────────────────────
 async function extractPDFText(arrayBuffer) {
   var pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
   var fullText = '';
   for (var i = 1; i <= pdf.numPages; i++) {
     var page = await pdf.getPage(i);
     var content = await page.getTextContent();
-    // Sort items by position to preserve reading order
     var items = content.items.map(function(it){ return {text:it.str, x:it.transform[4], y:it.transform[5]}; });
     items.sort(function(a,b){ return b.y-a.y || a.x-b.x; });
-    var lines = [], cur = [], lastY = null;
+    var lines=[], cur=[], lastY=null;
     items.forEach(function(it){
-      if (lastY !== null && Math.abs(it.y - lastY) > 5) { if (cur.length) lines.push(cur.join(' ')); cur = []; }
-      if (it.text.trim()) cur.push(it.text.trim());
-      lastY = it.y;
+      if(lastY!==null&&Math.abs(it.y-lastY)>5){if(cur.length)lines.push(cur.join(' '));cur=[];}
+      if(it.text.trim())cur.push(it.text.trim());lastY=it.y;
     });
-    if (cur.length) lines.push(cur.join(' '));
-    fullText += lines.join('\n') + '\n';
+    if(cur.length)lines.push(cur.join(' '));
+    fullText+=lines.join('\n')+'\n';
   }
   return fullText;
 }
 
-// ── Drop / file handling ──────────────────────────────────────────────────────
-function handleDrop(e) {
-  e.preventDefault();
-  document.getElementById('drop-zone').classList.remove('drag-over');
-  var file = e.dataTransfer.files[0];
-  if (file) processFile(file);
-}
-function handleFile(e) {
-  var file = e.target.files[0];
-  if (file) processFile(file);
-  e.target.value = '';
-}
+function handleDrop(e){e.preventDefault();document.getElementById('drop-zone').classList.remove('drag-over');var f=e.dataTransfer.files[0];if(f)processFile(f);}
+function handleFile(e){var f=e.target.files[0];if(f)processFile(f);e.target.value='';}
 
 async function processFile(file) {
-  var isPDF = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
-  var isImage = file.type.startsWith('image/');
-
-  if (!isPDF && !isImage) {
-    setDZ('failed','❌','Unsupported file type','Upload a PDF or image (JPG, PNG, HEIC, screenshot)');
-    setTimeout(resetDZ, 3000); return;
-  }
-
-  setDZ('scanning','⏳', isPDF ? 'Extracting PDF text…' : 'Running OCR on image…',
-    isPDF ? 'Reading embedded text — usually instant' : 'OCR running in browser — takes 5–15 seconds');
-
-  showMethodBadge(isPDF ? 'pdf' : 'ocr', isPDF ? 'PDF text' : 'OCR');
-
-  var text = '';
-
-  if (isPDF) {
-    // Try PDF text extraction first
-    try {
-      var buf = await file.arrayBuffer();
-      text = await extractPDFText(buf);
-    } catch(e) {
-      text = '';
-    }
-
-    // If PDF has no embedded text (scanned), show message
-    if (!text.trim()) {
-      setDZ('failed','⚠️','No text in PDF','This PDF appears to be a scanned image. Take a screenshot and upload that instead.');
-      hideMethodBadge();
-      setTimeout(resetDZ, 5000); return;
-    }
+  var isPDF=file.type==='application/pdf'||file.name.toLowerCase().endsWith('.pdf');
+  var isImage=file.type.startsWith('image/');
+  if(!isPDF&&!isImage){setDZ('failed','❌','Unsupported file','Upload a PDF or image');setTimeout(resetDZ,3000);return;}
+  setDZ('scanning','⏳',isPDF?'Extracting PDF text…':'Running OCR…',isPDF?'Reading embedded text…':'OCR in browser — 5–15 seconds');
+  showMethodBadge(isPDF?'pdf':'ocr',isPDF?'PDF text':'OCR');
+  var text='';
+  if(isPDF){
+    try{var buf=await file.arrayBuffer();text=await extractPDFText(buf);}catch(e){text='';}
+    if(!text.trim()){setDZ('failed','⚠️','No text in PDF','Take a screenshot and upload that instead');hideMethodBadge();setTimeout(resetDZ,5000);return;}
   } else {
-    // Image — use Tesseract OCR
     showProgress(true);
-    try {
-      var result = await Tesseract.recognize(file, 'eng', {
-        logger: function(m) {
-          if (m.status === 'recognizing text') {
-            var pct = Math.round(m.progress * 100);
-            document.getElementById('ocr-progress').textContent = 'Reading text… ' + pct + '%';
-            document.getElementById('ocr-bar-fill').style.width = pct + '%';
-          }
-        }
-      });
-      text = result.data.text;
-    } catch(e) {
-      showProgress(false);
-      setDZ('failed','❌','OCR failed',e.message||'Try a clearer image');
-      setTimeout(resetDZ, 4000); return;
-    }
+    try{
+      var result=await Tesseract.recognize(file,'eng',{logger:function(m){if(m.status==='recognizing text'){var pct=Math.round(m.progress*100);document.getElementById('ocr-progress').textContent='Reading… '+pct+'%';document.getElementById('ocr-bar-fill').style.width=pct+'%';}}});
+      text=result.data.text;
+    }catch(e){showProgress(false);setDZ('failed','❌','OCR failed',e.message||'Try a clearer image');setTimeout(resetDZ,4000);return;}
     showProgress(false);
-
-    if (!text.trim()) {
-      setDZ('failed','❌','No text found','Try a clearer, well-lit photo');
-      hideMethodBadge(); setTimeout(resetDZ, 4000); return;
-    }
+    if(!text.trim()){setDZ('failed','❌','No text found','Try a clearer photo');hideMethodBadge();setTimeout(resetDZ,4000);return;}
   }
-
-  // Show raw text preview
-  var prev = document.getElementById('ocr-preview');
-  prev.style.display = 'block';
-  prev.textContent = text.replace(/\n+/g,' · ').substring(0,300) + (text.length>300?'…':'');
-
-  // Parse and fill
-  var parsed = parseBoardingPass(text);
-  var filled = fillForm(parsed);
-
-  if (filled >= 2) {
-    setDZ('success','✅','Boarding pass read!','Review the highlighted fields and click Add flight');
-  } else {
-    setDZ('failed','⚠️','Partial read','Some fields found — fill in the rest manually');
-  }
-  setTimeout(resetDZ, 6000);
+  var prev=document.getElementById('ocr-preview');
+  prev.style.display='block';prev.textContent=text.replace(/\n+/g,' · ').substring(0,300)+(text.length>300?'…':'');
+  var parsed=parseBoardingPass(text),filled=fillForm(parsed);
+  if(filled>=2){setDZ('success','✅','Boarding pass read!','Review fields and click Add flight');}
+  else{setDZ('failed','⚠️','Partial read','Fill in missing fields manually');}
+  setTimeout(resetDZ,6000);
 }
 
-function showProgress(show) {
-  document.getElementById('ocr-progress').style.display = show ? 'block' : 'none';
-  document.getElementById('ocr-bar').style.display = show ? 'block' : 'none';
-  if (!show) { document.getElementById('ocr-bar-fill').style.width = '0%'; }
-}
-function showMethodBadge(type, label) {
-  var b = document.getElementById('method-badge');
-  b.textContent = label; b.className = 'method-badge ' + type; b.style.display = 'block';
-}
-function hideMethodBadge() { document.getElementById('method-badge').style.display = 'none'; }
-
-function setDZ(state, icon, title, sub) {
-  var dz = document.getElementById('drop-zone');
-  dz.className = 'drop-zone ' + (state||'');
-  document.getElementById('dz-icon').textContent = icon;
-  document.getElementById('dz-title').textContent = title;
-  document.getElementById('dz-sub').textContent = sub;
-}
-function resetDZ() {
-  setDZ('','🎫','Upload boarding pass','PDF (e-ticket) or photo/screenshot · processed locally, nothing uploaded');
-  hideMethodBadge(); showProgress(false);
-  document.getElementById('ocr-preview').style.display = 'none';
-}
+function showProgress(show){document.getElementById('ocr-progress').style.display=show?'block':'none';document.getElementById('ocr-bar').style.display=show?'block':'none';if(!show)document.getElementById('ocr-bar-fill').style.width='0%';}
+function showMethodBadge(type,label){var b=document.getElementById('method-badge');b.textContent=label;b.className='method-badge '+type;b.style.display='block';}
+function hideMethodBadge(){document.getElementById('method-badge').style.display='none';}
+function setDZ(state,icon,title,sub){var dz=document.getElementById('drop-zone');dz.className='drop-zone '+(state||'');document.getElementById('dz-icon').textContent=icon;document.getElementById('dz-title').textContent=title;document.getElementById('dz-sub').textContent=sub;}
+function resetDZ(){setDZ('','🎫','Upload boarding pass','PDF (e-ticket) or photo/screenshot · processed locally');hideMethodBadge();showProgress(false);document.getElementById('ocr-preview').style.display='none';}
 
 // ── Parser ────────────────────────────────────────────────────────────────────
 function parseBoardingPass(text) {
-  var u = text.toUpperCase();
-  var r = {from:'',to:'',airline:'',date:'',flightNum:'',conf:{}};
-  var M = {JAN:1,FEB:2,MAR:3,APR:4,MAY:5,JUN:6,JUL:7,AUG:8,SEP:9,OCT:10,NOV:11,DEC:12};
-
-  // FROM/TO labels
-  var ft = u.match(/FROM[:\s]+([A-Z]{3})[\s\S]{0,30}TO[:\s]+([A-Z]{3})/);
-  if (ft && IATA_SET.has(ft[1]) && IATA_SET.has(ft[2])) { r.from=ft[1]; r.to=ft[2]; r.conf.from=r.conf.to='high'; }
-
-  // ORIGIN/DESTINATION
-  if (!r.from) {
-    var o=u.match(/ORIGIN[:\s]+([A-Z]{3})/), d=u.match(/DEST(?:INATION)?[:\s]+([A-Z]{3})/);
-    if (o&&IATA_SET.has(o[1])) { r.from=o[1]; r.conf.from='high'; }
-    if (d&&IATA_SET.has(d[1])) { r.to=d[1]; r.conf.to='high'; }
-  }
-
-  // Arrow pattern BLR-LHR or BLR→LHR
-  if (!r.from||!r.to) {
-    var ar=u.match(/([A-Z]{3})\s*[-–→\/]\s*([A-Z]{3})/);
-    if (ar&&IATA_SET.has(ar[1])&&IATA_SET.has(ar[2])) {
-      if(!r.from){r.from=ar[1];r.conf.from='med';} if(!r.to){r.to=ar[2];r.conf.to='med';}
-    }
-  }
-
-  // Token scan
-  if (!r.from||!r.to) {
-    var toks=u.split(/[\s\n,;|()/\\]+/).filter(function(t){return /^[A-Z]{3}$/.test(t)&&IATA_SET.has(t);});
-    var uniq=toks.filter(function(v,i,a){return a.indexOf(v)===i;});
-    if(uniq.length>=2){if(!r.from){r.from=uniq[0];r.conf.from='low';}if(!r.to){r.to=uniq[1];r.conf.to='low';}}
-  }
-
-  // Flight number
-  var fm=u.match(/\b([A-Z]{2})\s*-?\s*(\d{1,4})\b/); if(fm) r.flightNum=fm[0].replace(/\s+/g,' ').trim();
-
-  // Dates
+  var u=text.toUpperCase(),r={from:'',to:'',airline:'',date:'',flightNum:'',conf:{}};
+  var M={JAN:1,FEB:2,MAR:3,APR:4,MAY:5,JUN:6,JUL:7,AUG:8,SEP:9,OCT:10,NOV:11,DEC:12};
+  var ft=u.match(/FROM[:\s]+([A-Z]{3})[\s\S]{0,30}TO[:\s]+([A-Z]{3})/);
+  if(ft&&IATA_SET.has(ft[1])&&IATA_SET.has(ft[2])){r.from=ft[1];r.to=ft[2];r.conf.from=r.conf.to='high';}
+  if(!r.from){var o=u.match(/ORIGIN[:\s]+([A-Z]{3})/),d=u.match(/DEST(?:INATION)?[:\s]+([A-Z]{3})/);if(o&&IATA_SET.has(o[1])){r.from=o[1];r.conf.from='high';}if(d&&IATA_SET.has(d[1])){r.to=d[1];r.conf.to='high';}}
+  if(!r.from||!r.to){var ar=u.match(/([A-Z]{3})\s*[-–→\/]\s*([A-Z]{3})/);if(ar&&IATA_SET.has(ar[1])&&IATA_SET.has(ar[2])){if(!r.from){r.from=ar[1];r.conf.from='med';}if(!r.to){r.to=ar[2];r.conf.to='med';}}}
+  if(!r.from||!r.to){var toks=u.split(/[\s\n,;|()/\\]+/).filter(function(t){return /^[A-Z]{3}$/.test(t)&&IATA_SET.has(t);});var uniq=toks.filter(function(v,i,a){return a.indexOf(v)===i;});if(uniq.length>=2){if(!r.from){r.from=uniq[0];r.conf.from='low';}if(!r.to){r.to=uniq[1];r.conf.to='low';}}}
+  var fm=u.match(/\b([A-Z]{2})\s*-?\s*(\d{1,4})\b/);if(fm)r.flightNum=fm[0].replace(/\s+/g,' ').trim();
   var d1=u.match(/(\d{1,2})\s*(JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)\s*(\d{2,4})/);
   if(d1){var y=d1[3].length===2?'20'+d1[3]:d1[3];r.date=y+'-'+String(M[d1[2]]).padStart(2,'0')+'-'+String(d1[1]).padStart(2,'0');r.conf.date='high';}
   if(!r.date){var d2=u.match(/(\d{2})(JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)(\d{2})/);if(d2){r.date='20'+d2[3]+'-'+String(M[d2[2]]).padStart(2,'0')+'-'+d2[1];r.conf.date='high';}}
   if(!r.date){var d3=text.match(/(\d{4})-(\d{2})-(\d{2})/);if(d3){r.date=d3[1]+'-'+d3[2]+'-'+d3[3];r.conf.date='high';}}
   if(!r.date){var d4=text.match(/(\d{2})\/(\d{2})\/(\d{4})/);if(d4){r.date=d4[3]+'-'+d4[2]+'-'+d4[1];r.conf.date='med';}}
-
-  // Airline
   for(var i=0;i<AIRLINE_MAP.length;i++){if(AIRLINE_MAP[i][0].test(text)){r.airline=AIRLINE_MAP[i][1];r.conf.airline='high';break;}}
-
   return r;
 }
 
-function fillForm(parsed) {
+function fillForm(parsed){
   var n=0;
   function fill(id,val,conf){if(!val)return;var el=document.getElementById(id);el.value=val;el.classList.remove('filled-auto','filled-low');el.classList.add(conf==='high'||conf==='med'?'filled-auto':'filled-low');n++;}
-  fill('f-from',parsed.from,parsed.conf.from); fill('f-to',parsed.to,parsed.conf.to);
-  fill('f-airline',parsed.airline,parsed.conf.airline); fill('f-date',parsed.date,parsed.conf.date);
-  fill('f-flightnum',parsed.flightNum,'high');
-  return n;
+  fill('f-from',parsed.from,parsed.conf.from);fill('f-to',parsed.to,parsed.conf.to);
+  fill('f-airline',parsed.airline,parsed.conf.airline);fill('f-date',parsed.date,parsed.conf.date);
+  fill('f-flightnum',parsed.flightNum,'high');return n;
 }
-
-function resetForm() {
-  ['f-from','f-to','f-airline','f-date','f-flightnum'].forEach(function(id){var el=document.getElementById(id);el.value='';el.classList.remove('filled-auto','filled-low');});
-  document.getElementById('add-status').style.display='none';
-  resetDZ();
-}
+function resetForm(){['f-from','f-to','f-airline','f-date','f-flightnum'].forEach(function(id){var el=document.getElementById(id);el.value='';el.classList.remove('filled-auto','filled-low');});document.getElementById('add-status').style.display='none';resetDZ();}
 
 // ── Add flight ────────────────────────────────────────────────────────────────
-function addFlight() {
+function addFlight(){
   var from=document.getElementById('f-from').value.trim().toUpperCase();
   var to=document.getElementById('f-to').value.trim().toUpperCase();
   var airline=document.getElementById('f-airline').value.trim();
   var date=document.getElementById('f-date').value;
   var num=document.getElementById('f-flightnum').value.trim();
-
-  if(!AP[from]){showStatus('add-status','err','Unknown airport: "'+from+'" — check the IATA code');return;}
-  if(!AP[to]){showStatus('add-status','err','Unknown airport: "'+to+'" — check the IATA code');return;}
+  if(!AP[from]){showStatus('add-status','err','Unknown airport: "'+from+'"');return;}
+  if(!AP[to]){showStatus('add-status','err','Unknown airport: "'+to+'"');return;}
   if(from===to){showStatus('add-status','err','Origin and destination cannot be the same');return;}
   if(!airline){showStatus('add-status','err','Please enter an airline name');return;}
-  if(!date){showStatus('add-status','err','Please select a date of travel');return;}
-
+  if(!date){showStatus('add-status','err','Please select a date');return;}
   var f={id:String(Date.now()),from:from,to:to,airline:airline,date:date,flightNum:num,km:haversine(AP[from],AP[to])};
-  var btn=document.getElementById('add-btn'); btn.disabled=true;
-  showStatus('add-status','loading','Saving…');
-
+  var btn=document.getElementById('add-btn');btn.disabled=true;
+  showStatus('add-status','loading','Saving to Google Sheet…');
   saveToSheet(f,function(err){
     btn.disabled=false;
     if(err){showStatus('add-status','err','Could not save: '+err.message);return;}
-    flights.push(f); flights.sort(function(a,b){return a.date.localeCompare(b.date);});
-    resetForm();
-    showStatus('add-status','ok','✓ Added '+from+' → '+to+' ('+f.km.toLocaleString()+' km)');
+    flights.push(f);flights.sort(function(a,b){return a.date.localeCompare(b.date);});
+    resetForm();showStatus('add-status','ok','✓ Added '+from+' → '+to+' ('+f.km.toLocaleString()+' km)');
     renderAll();
   });
 }
 
-// ── JSONP ─────────────────────────────────────────────────────────────────────
-function jsonpCall(url,params,cb){
-  var name='ft_cb_'+Date.now(), s=document.createElement('script');
-  var qs=Object.keys(params).map(function(k){return k+'='+encodeURIComponent(params[k]);}).join('&');
-  var t=setTimeout(function(){cleanup();cb(new Error('Timeout'),null);},12000);
-  function cleanup(){clearTimeout(t);delete window[name];if(s.parentNode)s.parentNode.removeChild(s);}
-  window[name]=function(d){cleanup();cb(null,d);};
-  s.src=url+'?'+qs+'&callback='+name+'&t='+Date.now();
-  s.onerror=function(){cleanup();cb(new Error('Network error'),null);};
-  document.head.appendChild(s);
-}
-
-function loadFromSheet(){
-  if(!SCRIPT_URL){showBanner('err','⚠ No Sheet URL — paste it in the Google Sheet sync card');return;}
-  showBanner('loading','⏳ Loading flights from Google Sheet…');
-  jsonpCall(SCRIPT_URL,{action:'read'},function(err,data){
-    if(err||!data||!data.ok){showBanner('err','⚠ Could not load: '+(err?err.message:(data&&data.error)||'unknown'));return;}
-    flights=(data.flights||[]).sort(function(a,b){return a.date.localeCompare(b.date);});
-    renderAll();
-    showBanner('ok','✓ Loaded '+flights.length+' flight'+(flights.length!==1?'s':'')+' from Google Sheet');
-  });
-}
-
-function saveToSheet(f,cb){
-  if(!SCRIPT_URL){cb(null);return;}
-  jsonpCall(SCRIPT_URL,{action:'add',id:f.id,from:f.from,to:f.to,airline:f.airline,date:f.date,flightNum:f.flightNum||'',km:f.km},function(err,data){
-    if(err||!data||!data.ok)cb(err||new Error((data&&data.error)||'Save failed'));
-    else cb(null);
-  });
-}
-
-function deleteFromSheet(id){if(!SCRIPT_URL)return;jsonpCall(SCRIPT_URL,{action:'delete',id:id},function(){});}
-
-function connectScript(){
-  var url=document.getElementById('url-input').value.trim();
-  if(!url.includes('script.google.com')||!url.endsWith('/exec')){showStatus('url-status','err','Needs to be a script.google.com URL ending in /exec');return;}
-  showStatus('url-status','loading','Testing connection…');
-  jsonpCall(url,{action:'read'},function(err,data){
-    if(err||!data||!data.ok){showStatus('url-status','err','Failed: '+(err?err.message:(data&&data.error)||'unknown'));return;}
-    SCRIPT_URL=url; localStorage.setItem('ft_script_url',url);
-    flights=(data.flights||[]).sort(function(a,b){return a.date.localeCompare(b.date);});
-    updateSheetUI(); renderAll(); showBanner('ok','✓ Connected — '+flights.length+' flights loaded');
-  });
-}
-
-function clearScript(){if(!confirm('Disconnect?'))return;localStorage.removeItem('ft_script_url');SCRIPT_URL='';updateSheetUI();}
-
-function updateSheetUI(){
-  var tag=document.getElementById('sheet-tag'),conn=document.getElementById('sheet-connected'),disc=document.getElementById('sheet-disconnected');
-  if(SCRIPT_URL){
-    tag.textContent='✓ Connected'; tag.style.cssText='background:var(--green-bg);color:var(--green);border:1px solid var(--green-border);font-size:11px;font-weight:500;padding:3px 10px;border-radius:20px;font-family:"DM Mono",monospace;';
-    conn.style.display='block'; disc.style.display='none';
-    document.getElementById('sheet-url-display').textContent=SCRIPT_URL.slice(0,60)+'…';
-  } else {
-    tag.textContent='Not connected'; tag.style.cssText='background:var(--red-bg);color:var(--red);border:1px solid var(--red-border);font-size:11px;font-weight:500;padding:3px 10px;border-radius:20px;font-family:"DM Mono",monospace;';
-    conn.style.display='none'; disc.style.display='block';
-  }
+function deleteFlight(id){
+  if(!confirm('Remove this flight?'))return;
+  deleteFromSheet(id);
+  flights=flights.filter(function(f){return f.id!==id;});
+  renderAll();
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -624,7 +454,6 @@ function haversine(a,b){var R=6371,dL=(b.lat-a.lat)*Math.PI/180,dO=(b.lon-a.lon)
 function fmtDate(d){if(!d)return '';try{return new Date(d+'T12:00:00').toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});}catch(e){return d;}}
 function showStatus(id,type,msg){var el=document.getElementById(id);el.className='status '+type;el.textContent=msg;if(type!=='loading')setTimeout(function(){el.style.display='none';el.className='status';},4000);}
 function showBanner(type,msg){var b=document.getElementById('load-banner');b.textContent=msg;b.className='load-banner '+type;if(type!=='loading')setTimeout(function(){b.style.display='none';},4000);}
-function deleteFlight(id){if(!confirm('Remove this flight?'))return;deleteFromSheet(id);flights=flights.filter(function(f){return f.id!==id;});renderAll();}
 
 // ── Render ────────────────────────────────────────────────────────────────────
 function renderAll(){renderLog();renderStats();if(map)drawMap();}
@@ -665,7 +494,6 @@ function renderStats(){
 // ── Map ───────────────────────────────────────────────────────────────────────
 function initMap(){if(map)return;map=L.map('map',{center:[20,20],zoom:2});L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© <a href="https://openstreetmap.org/copyright">OpenStreetMap</a>',maxZoom:18}).addTo(map);}
 function gcPoints(a,b){var toR=function(d){return d*Math.PI/180;},toDeg=function(r){return r*180/Math.PI;};var la1=toR(a.lat),lo1=toR(a.lon),la2=toR(b.lat),lo2=toR(b.lon);var d=Math.acos(Math.max(-1,Math.min(1,Math.sin(la1)*Math.sin(la2)+Math.cos(la1)*Math.cos(la2)*Math.cos(lo2-lo1))));var pts=[];for(var i=0;i<=80;i++){var t=i/80,sD=Math.sin(d),A=sD<1e-4?1-t:Math.sin((1-t)*d)/sD,B=sD<1e-4?t:Math.sin(t*d)/sD;var x=A*Math.cos(la1)*Math.cos(lo1)+B*Math.cos(la2)*Math.cos(lo2),y=A*Math.cos(la1)*Math.sin(lo1)+B*Math.cos(la2)*Math.sin(lo2),z=A*Math.sin(la1)+B*Math.sin(la2);pts.push([toDeg(Math.atan2(z,Math.sqrt(x*x+y*y))),toDeg(Math.atan2(y,x))]);}var segs=[[]];segs[0].push(pts[0]);for(var i=1;i<pts.length;i++){if(Math.abs(pts[i][1]-pts[i-1][1])>180)segs.push([]);segs[segs.length-1].push(pts[i]);}return segs;}
-
 function drawMap(){
   arcLayers.forEach(function(l){map.removeLayer(l);});dotLayers.forEach(function(l){map.removeLayer(l);});arcLayers=[];dotLayers=[];
   var th={};flights.forEach(function(f){var k=rkey(f);th[k]=(th[k]||0)+1;});
@@ -696,16 +524,8 @@ function showPage(name,btn){
   if(name==='log')renderLog();
 }
 
-// ── Init ──────────────────────────────────────────────────────────────────────
-// Save hardcoded URL to localStorage so connect UI shows correctly
-if(SCRIPT_URL) localStorage.setItem('ft_script_url', SCRIPT_URL);
-updateSheetUI();
-// Always auto-load on every device — no setup needed
-if(SCRIPT_URL) {
-  loadFromSheet();
-} else {
-  document.getElementById('load-banner').style.display='none';
-}
+// ── Init — auto-loads on every device, no setup needed ───────────────────────
+loadFromSheet();
 </script>
 </body>
 </html>
