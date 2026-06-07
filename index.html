@@ -227,24 +227,15 @@ input.filled-low{border-color:rgba(245,200,66,0.4);background:rgba(245,200,66,0.
     <div class="status" id="add-status"></div>
   </div>
 
-  <!-- Sheet connection -->
-  <div class="card">
-    <div class="card-header">
-      <span class="card-title">Google Sheet sync</span>
-      <span class="tag" id="sheet-tag">Not connected</span>
-    </div>
-    <div id="sheet-connected" style="display:none">
-      <div style="font-size:12px;color:var(--text3);word-break:break-all;margin-bottom:12px" id="sheet-url-display"></div>
-      <button class="btn btn-sm btn-danger" onclick="clearScript()">Disconnect</button>
-    </div>
-    <div id="sheet-disconnected">
-      <div style="font-size:13px;color:var(--text2);margin-bottom:12px;line-height:1.7">Connect your Google Sheet to sync flights across all devices. <a href="#" style="color:var(--blue)" onclick="alert('1. Open your Sheet\n2. Extensions → Apps Script\n3. Paste apps-script.js contents → Save\n4. Deploy → New deployment → Web app\n5. Execute as: Me · Who has access: Anyone\n6. Copy the /exec URL and paste below')">Setup guide</a></div>
-      <input type="text" id="url-input" placeholder="https://script.google.com/macros/s/…/exec" style="margin-bottom:10px">
-      <button class="btn btn-primary btn-sm" onclick="connectScript()">Connect →</button>
-      <div class="status" id="url-status"></div>
-    </div>
-  </div>
 </div>
+
+<!-- Hidden stubs for JS refs (URL hardcoded, no setup card needed) -->
+<span id="sheet-tag" style="display:none"></span>
+<div id="sheet-connected" style="display:none"></div>
+<div id="sheet-disconnected" style="display:none"></div>
+<div id="sheet-url-display" style="display:none"></div>
+<input id="url-input" style="display:none">
+<div id="url-status" style="display:none"></div>
 
 <!-- LOG PAGE -->
 <div class="page" id="page-log">
@@ -276,7 +267,9 @@ input.filled-low{border-color:rgba(245,200,66,0.4);background:rgba(245,200,66,0.
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
 // ── Config ────────────────────────────────────────────────────────────────────
-var SCRIPT_URL = localStorage.getItem('ft_script_url') || '';
+// ── YOUR APPS SCRIPT URL — hardcoded so it works on every device automatically ──
+var HARDCODED_URL = 'https://script.google.com/macros/s/AKfycbxMwXp8ehhanr4D2edrqsLn3gI8qhAw5OIOpD7hbEZsHkBf3o-d9NhOO-wD9JLPN_ktkg/exec';
+var SCRIPT_URL = HARDCODED_URL || localStorage.getItem('ft_script_url') || '';
 
 // ── Airports ──────────────────────────────────────────────────────────────────
 var AP = {
@@ -584,7 +577,8 @@ function loadFromSheet(){
   jsonpCall(SCRIPT_URL,{action:'read'},function(err,data){
     if(err||!data||!data.ok){showBanner('err','⚠ Could not load: '+(err?err.message:(data&&data.error)||'unknown'));return;}
     flights=(data.flights||[]).sort(function(a,b){return a.date.localeCompare(b.date);});
-    renderAll(); showBanner('ok','✓ Loaded '+flights.length+' flights');
+    renderAll();
+    showBanner('ok','✓ Loaded '+flights.length+' flight'+(flights.length!==1?'s':'')+' from Google Sheet');
   });
 }
 
@@ -703,9 +697,15 @@ function showPage(name,btn){
 }
 
 // ── Init ──────────────────────────────────────────────────────────────────────
+// Save hardcoded URL to localStorage so connect UI shows correctly
+if(SCRIPT_URL) localStorage.setItem('ft_script_url', SCRIPT_URL);
 updateSheetUI();
-if(SCRIPT_URL)loadFromSheet();
-else document.getElementById('load-banner').style.display='none';
+// Always auto-load on every device — no setup needed
+if(SCRIPT_URL) {
+  loadFromSheet();
+} else {
+  document.getElementById('load-banner').style.display='none';
+}
 </script>
 </body>
 </html>
