@@ -278,6 +278,19 @@ var AP = {
   CAI:{n:"Cairo",c:"Egypt",lat:30.122,lon:31.406},
   SYD:{n:"Sydney",c:"Australia",lat:-33.947,lon:151.177},MEL:{n:"Melbourne",c:"Australia",lat:-37.673,lon:144.843},
   GRU:{n:"São Paulo",c:"Brazil",lat:-23.432,lon:-46.469},MEX:{n:"Mexico City",c:"Mexico",lat:19.436,lon:-99.072},
+  // Philippines
+  MNL:{n:"Manila",c:"Philippines",lat:14.509,lon:121.020},
+  PPS:{n:"Puerto Princesa",c:"Philippines",lat:9.742,lon:118.759},
+  USU:{n:"Coron",c:"Philippines",lat:12.121,lon:120.100},
+  // Southeast Asia
+  DPS:{n:"Bali",c:"Indonesia",lat:-8.748,lon:115.167},
+  SGN:{n:"Ho Chi Minh City",c:"Vietnam",lat:10.818,lon:106.652},
+  DAD:{n:"Da Nang",c:"Vietnam",lat:16.044,lon:108.199},
+  HAN:{n:"Hanoi",c:"Vietnam",lat:21.221,lon:105.807},
+  // USA additions
+  BUF:{n:"Buffalo",c:"USA",lat:42.940,lon:-78.732},
+  MCO:{n:"Orlando",c:"USA",lat:28.429,lon:-81.309},
+  BWI:{n:"Baltimore",c:"USA",lat:39.175,lon:-76.668},
 };
 var IATA_SET = new Set(Object.keys(AP));
 
@@ -466,7 +479,15 @@ function deleteFlight(id){
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function rkey(f){return [f.from,f.to].sort().join('-');}
 function haversine(a,b){var R=6371,dL=(b.lat-a.lat)*Math.PI/180,dO=(b.lon-a.lon)*Math.PI/180;var s=Math.sin(dL/2)*Math.sin(dL/2)+Math.cos(a.lat*Math.PI/180)*Math.cos(b.lat*Math.PI/180)*Math.sin(dO/2)*Math.sin(dO/2);return Math.round(2*R*Math.asin(Math.sqrt(s)));}
-function fmtDate(d){if(!d)return '';try{return new Date(d+'T12:00:00').toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});}catch(e){return d;}}
+function fmtDate(d){
+  if(!d||d==='Invalid Date') return '—';
+  // Already a clean YYYY-MM-DD string
+  if(/^\d{4}-\d{2}-\d{2}$/.test(d)){
+    try{return new Date(d+'T12:00:00').toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});}
+    catch(e){return d;}
+  }
+  return d;
+}
 function showStatus(id,type,msg){var el=document.getElementById(id);el.className='status '+type;el.textContent=msg;if(type!=='loading')setTimeout(function(){el.style.display='none';el.className='status';},4000);}
 function showBanner(type,msg){var b=document.getElementById('load-banner');b.textContent=msg;b.className='load-banner '+type;if(type!=='loading')setTimeout(function(){b.style.display='none';},4000);}
 
