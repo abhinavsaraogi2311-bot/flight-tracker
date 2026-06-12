@@ -699,44 +699,54 @@ function initMap(){
 
 function loadCountryBoundaries(){
   if(worldGeoJSON){ drawCountryLayer(); return; }
-  fetch('https://raw.githubusercontent.com/johan/world.geo.json/master/countries.geo.json')
+  fetch('https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson')
     .then(function(r){ return r.json(); })
     .then(function(data){ worldGeoJSON = data; drawCountryLayer(); })
-    .catch(function(){ /* fail silently — country shading is a nice-to-have */ });
+    .catch(function(){
+      // Fallback source if primary is unreachable
+      fetch('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json')
+        .then(function(){ /* topojson fallback not implemented — fail silently */ })
+        .catch(function(){});
+    });
 }
+
+// Map our AP country names to ISO 3166-1 alpha-3 codes for reliable matching
+var COUNTRY_ISO3 = {
+  'India':'IND','UK':'GBR','France':'FRA','Netherlands':'NLD','Germany':'DEU',
+  'Switzerland':'CHE','Spain':'ESP','Italy':'ITA','Austria':'AUT','Denmark':'DNK',
+  'Norway':'NOR','Sweden':'SWE','Finland':'FIN','Poland':'POL','Czechia':'CZE',
+  'Belgium':'BEL','Portugal':'PRT','Greece':'GRC','Turkey':'TUR','Ireland':'IRL',
+  'USA':'USA','Canada':'CAN','UAE':'ARE','Qatar':'QAT','Saudi Arabia':'SAU',
+  'Kuwait':'KWT','Bahrain':'BHR','Singapore':'SGP','Hong Kong':'HKG',
+  'Japan':'JPN','South Korea':'KOR','China':'CHN','Malaysia':'MYS','Thailand':'THA',
+  'Sri Lanka':'LKA','Nepal':'NPL','Maldives':'MDV','South Africa':'ZAF',
+  'Kenya':'KEN','Egypt':'EGY','Australia':'AUS','Brazil':'BRA','Mexico':'MEX',
+  'Philippines':'PHL','Indonesia':'IDN','Vietnam':'VNM',
+};
 
 function drawCountryLayer(){
   if(!worldGeoJSON || !map) return;
   if(countryLayer) map.removeLayer(countryLayer);
 
-  var visitedCountries = new Set();
+  var visitedISO = new Set();
   flights.forEach(function(f){
-    if(AP[f.from]) visitedCountries.add(AP[f.from].c);
-    if(AP[f.to]) visitedCountries.add(AP[f.to].c);
+    if(AP[f.from] && COUNTRY_ISO3[AP[f.from].c]) visitedISO.add(COUNTRY_ISO3[AP[f.from].c]);
+    if(AP[f.to] && COUNTRY_ISO3[AP[f.to].c]) visitedISO.add(COUNTRY_ISO3[AP[f.to].c]);
   });
-
-  // Map our country names to GeoJSON "name" property variants where they differ
-  var nameMap = {
-    'USA':'United States', 'UK':'United Kingdom', 'South Korea':'South Korea',
-    'UAE':'United Arab Emirates', 'Czechia':'Czech Republic', 'Hong Kong':'Hong Kong S.A.R.'
-  };
-  var visitedGeoNames = new Set();
-  visitedCountries.forEach(function(c){ visitedGeoNames.add(nameMap[c] || c); });
 
   countryLayer = L.geoJSON(worldGeoJSON, {
     style: function(feature){
-      var name = feature.properties.name;
-      var isVisited = visitedGeoNames.has(name);
+      var iso3 = feature.properties['ISO_A3'] || feature.properties['ISO3'] || feature.properties['iso_a3'];
+      var isVisited = visitedISO.has(iso3);
       return {
         fillColor: isVisited ? '#a8e6a3' : 'transparent',
         fillOpacity: isVisited ? 0.35 : 0,
-        color: isVisited ? 'rgba(168,230,163,0.5)' : 'transparent',
+        color: isVisited ? 'rgba(120,200,115,0.6)' : 'transparent',
         weight: isVisited ? 1 : 0
       };
     }
   }).addTo(map);
 
-  // Make sure country shading sits below arcs/dots
   countryLayer.bringToBack();
 }
 function gcPoints(a,b){var toR=function(d){return d*Math.PI/180;},toDeg=function(r){return r*180/Math.PI;};var la1=toR(a.lat),lo1=toR(a.lon),la2=toR(b.lat),lo2=toR(b.lon);var d=Math.acos(Math.max(-1,Math.min(1,Math.sin(la1)*Math.sin(la2)+Math.cos(la1)*Math.cos(la2)*Math.cos(lo2-lo1))));var pts=[];for(var i=0;i<=80;i++){var t=i/80,sD=Math.sin(d),A=sD<1e-4?1-t:Math.sin((1-t)*d)/sD,B=sD<1e-4?t:Math.sin(t*d)/sD;var x=A*Math.cos(la1)*Math.cos(lo1)+B*Math.cos(la2)*Math.cos(lo2),y=A*Math.cos(la1)*Math.sin(lo1)+B*Math.cos(la2)*Math.sin(lo2),z=A*Math.sin(la1)+B*Math.sin(la2);pts.push([toDeg(Math.atan2(z,Math.sqrt(x*x+y*y))),toDeg(Math.atan2(y,x))]);}var segs=[[]];segs[0].push(pts[0]);for(var i=1;i<pts.length;i++){if(Math.abs(pts[i][1]-pts[i-1][1])>180)segs.push([]);segs[segs.length-1].push(pts[i]);}return segs;}
