@@ -187,7 +187,17 @@ input.filled-low{border-color:rgba(245,200,66,0.4);background:rgba(245,200,66,0.
       <div><label class="lbl">To (IATA)</label><input type="text" id="f-to" maxlength="3" placeholder="LHR" oninput="this.value=this.value.toUpperCase();this.classList.remove('filled-auto','filled-low')"></div>
     </div>
     <div class="field-row">
-      <div><label class="lbl">Airline</label><input type="text" id="f-airline" placeholder="IndiGo, Air India…" oninput="this.classList.remove('filled-auto','filled-low')"></div>
+      <div>
+        <label class="lbl">Airline</label>
+        <div style="position:relative">
+          <input type="text" id="f-airline" placeholder="Type or pick airline…" 
+            oninput="this.classList.remove('filled-auto','filled-low');onAirlineInput(this.value)"
+            onchange="this.classList.remove('filled-auto','filled-low')"
+            autocomplete="off" style="width:100%">
+          <div id="airline-dropdown" style="display:none;position:absolute;top:100%;left:0;right:0;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--radius-sm);z-index:50;max-height:180px;overflow-y:auto;margin-top:2px;box-shadow:0 4px 16px rgba(0,0,0,0.4)"></div>
+        </div>
+        <div style="font-size:10px;color:var(--text3);margin-top:4px;">Pick from list or type a new one</div>
+      </div>
       <div><label class="lbl">Date of travel</label><input type="date" id="f-date" oninput="this.classList.remove('filled-auto','filled-low')"></div>
     </div>
     <div><label class="lbl">Flight number (optional)</label><input type="text" id="f-flightnum" placeholder="6E 123" style="max-width:200px" oninput="this.classList.remove('filled-auto','filled-low')"></div>
@@ -212,6 +222,8 @@ input.filled-low{border-color:rgba(245,200,66,0.4);background:rgba(245,200,66,0.
 <div class="page" id="page-stats">
   <div id="stats-empty" class="empty"><div class="empty-icon">📊</div><p>No data yet</p><span>Add flights to see your stats</span></div>
   <div id="stats-content" style="display:none">
+    <!-- Date range filter -->
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px;" id="year-filters"></div>
     <div class="metrics" id="stats-metrics"></div>
     <div class="section-box"><div class="section-label">Airlines flown</div><div id="airline-bars"></div></div>
     <div class="section-box"><div class="section-label">Top routes</div><div id="route-bars"></div></div>
@@ -306,6 +318,21 @@ var AIRLINE_MAP = [
 ];
 
 var flights = [], map = null, arcLayers = [], dotLayers = [], highlightKey = null;
+var statsYear = 'all'; // current year filter
+
+// ── Airline → IATA code map ───────────────────────────────────────────────────
+var AIRLINE_CODES = {
+  'Air India': 'AI', 'IndiGo': '6E', 'SpiceJet': 'SG', 'Vistara': 'UK',
+  'Akasa Air': 'QP', 'Go First': 'G8', 'Air India Express': 'IX',
+  'Emirates': 'EK', 'Etihad Airways': 'EY', 'Qatar Airways': 'QR',
+  'Lufthansa': 'LH', 'British Airways': 'BA', 'Air France': 'AF',
+  'KLM': 'KL', 'Singapore Airlines': 'SQ', 'Cathay Pacific': 'CX',
+  'Thai Airways': 'TG', 'Malaysia Airlines': 'MH', 'United Airlines': 'UA',
+  'American Airlines': 'AA', 'Delta': 'DL', 'Turkish Airlines': 'TK',
+  'Swiss': 'LX', 'Finnair': 'AY', 'Qantas': 'QF', 'flydubai': 'FZ',
+  'Air Arabia': 'G9', 'Virgin Atlantic': 'VS', 'Indigo': '6E',
+  'Malaysian Airlines': 'MH', 'Akasa': 'QP',
+};
 
 function parseSheetDate(raw) {
   if (!raw) return '';
@@ -343,6 +370,93 @@ function fmtDate(d) {
       day: 'numeric', month: 'short', year: 'numeric'
     });
   } catch(e) { return clean; }
+}
+
+// ── Airline dropdown ──────────────────────────────────────────────────────────
+function getKnownAirlines() {
+  // Airlines from existing flights + base list
+  var fromFlights = flights.map(function(f){ return f.airline; }).filter(Boolean);
+  var base = Object.keys(AIRLINE_CODES);
+  var all = base.concat(fromFlights);
+  // Deduplicate, sort
+  var seen = {};
+  return all.filter(function(a){ if(!a||seen[a])return false; seen[a]=true; return true; }).sort();
+}
+
+function onAirlineInput(val) {
+  var dd = document.getElementById('airline-dropdown');
+  var q = val.trim().toLowerCase();
+  var airlines = getKnownAirlines();
+  var matches = q ? airlines.filter(function(a){ return a.toLowerCase().includes(q); }) : airlines;
+
+  if (!matches.length || !val) { dd.style.display = 'none'; return; }
+
+  dd.innerHTML = matches.slice(0,8).map(function(a){
+    var code = AIRLINE_CODES[a] || '';
+    return '<div onclick="selectAirline(\'' + a.replace(/'/g,"\\'") + '\')" style="padding:9px 12px;cursor:pointer;font-size:13px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border);">'
+      + '<span>' + a + '</span>'
+      + (code ? '<span style="font-family:\'DM Mono\',monospace;font-size:11px;color:var(--text3);">' + code + '</span>' : '')
+      + '</div>';
+  }).join('');
+  dd.style.display = 'block';
+}
+
+function selectAirline(name) {
+  var el = document.getElementById('f-airline');
+  el.value = name;
+  el.classList.remove('filled-auto','filled-low');
+  document.getElementById('airline-dropdown').style.display = 'none';
+  // Auto-fill flight number prefix if field is empty
+  var fnEl = document.getElementById('f-flightnum');
+  var code = AIRLINE_CODES[name];
+  if (code && !fnEl.value) {
+    fnEl.value = code + ' ';
+    fnEl.focus();
+    fnEl.setSelectionRange(fnEl.value.length, fnEl.value.length);
+  }
+}
+
+// Close dropdown when clicking outside
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('#f-airline') && !e.target.closest('#airline-dropdown')) {
+    var dd = document.getElementById('airline-dropdown');
+    if (dd) dd.style.display = 'none';
+  }
+});
+
+// ── Year filter ───────────────────────────────────────────────────────────────
+function buildYearFilters() {
+  var years = new Set();
+  flights.forEach(function(f) {
+    if (f.date && f.date.length >= 4) years.add(f.date.substring(0,4));
+  });
+  var sorted = Array.from(years).sort().reverse();
+  var el = document.getElementById('year-filters');
+  if (!el) return;
+
+  var buttons = ['all'].concat(sorted);
+  el.innerHTML = buttons.map(function(y) {
+    var active = statsYear === y;
+    return '<button onclick="setStatsYear(\'' + y + '\')" style="padding:5px 14px;font-size:12px;font-weight:500;border-radius:20px;cursor:pointer;border:1px solid '
+      + (active ? 'var(--blue)' : 'var(--border)')
+      + ';background:' + (active ? 'var(--blue-bg)' : 'var(--bg3)')
+      + ';color:' + (active ? 'var(--blue)' : 'var(--text2)')
+      + ';font-family:\'DM Mono\',monospace;transition:all 0.15s;">'
+      + (y === 'all' ? 'All time' : y)
+      + '</button>';
+  }).join('');
+}
+
+function setStatsYear(y) {
+  statsYear = y;
+  renderStats();
+}
+
+function filteredFlights() {
+  if (statsYear === 'all') return flights;
+  return flights.filter(function(f) {
+    return f.date && f.date.startsWith(statsYear);
+  });
 }
 
 // ── Sheet API ─────────────────────────────────────────────────────────────────
@@ -544,31 +658,91 @@ function renderLog(){
   }).join('');
 }
 
+
+// ── Map ───────────────────────────────────────────────────────────────────────
 function renderStats(){
   var has=flights.length>0;
   document.getElementById('stats-empty').style.display=has?'none':'block';
   document.getElementById('stats-content').style.display=has?'block':'none';
   if(!has)return;
-  var km=flights.reduce(function(s,f){return s+f.km;},0);
-  var aps=new Set(flights.flatMap(function(f){return[f.from,f.to];}));
-  var ctrs=new Set(flights.flatMap(function(f){return[AP[f.from]&&AP[f.from].c,AP[f.to]&&AP[f.to].c].filter(Boolean);}));
+  buildYearFilters();
+  var ff=filteredFlights();
+  var km=ff.reduce(function(s,f){return s+f.km;},0);
+  var aps=new Set(ff.flatMap(function(f){return[f.from,f.to];}));
+  var ctrs=new Set(ff.flatMap(function(f){return[AP[f.from]&&AP[f.from].c,AP[f.to]&&AP[f.to].c].filter(Boolean);}));
   document.getElementById('stats-metrics').innerHTML=
-    '<div class="metric"><div class="metric-label">Total flights</div><div class="metric-value">'+flights.length+'</div><div class="metric-sub">legs flown</div></div>'+
+    '<div class="metric"><div class="metric-label">Total flights</div><div class="metric-value">'+ff.length+'</div><div class="metric-sub">legs flown</div></div>'+
     '<div class="metric"><div class="metric-label">Km flown</div><div class="metric-value">'+km.toLocaleString()+'</div><div class="metric-sub">'+(km/40075).toFixed(1)+'× Earth</div></div>'+
     '<div class="metric"><div class="metric-label">Airports</div><div class="metric-value">'+aps.size+'</div><div class="metric-sub">unique</div></div>'+
     '<div class="metric"><div class="metric-label">Countries</div><div class="metric-value">'+ctrs.size+'</div><div class="metric-sub">visited</div></div>';
-  var aC={};flights.forEach(function(f){aC[f.airline]=(aC[f.airline]||0)+1;});var sA=Object.entries(aC).sort(function(a,b){return b[1]-a[1];}),mA=sA[0]?sA[0][1]:1;
-  document.getElementById('airline-bars').innerHTML=sA.map(function(e){return'<div class="bar-row"><div class="bar-meta"><span class="bar-name">'+e[0]+'</span><span class="bar-val">'+e[1]+'</span></div><div class="bar-bg"><div class="bar-fill" style="width:'+(e[1]/mA*100).toFixed(0)+'%"></div></div></div>';}).join('');
-  var rC={};flights.forEach(function(f){var k=f.from+'→'+f.to;rC[k]=(rC[k]||0)+1;});var sR=Object.entries(rC).sort(function(a,b){return b[1]-a[1];}).slice(0,5),mR=sR[0]?sR[0][1]:1;
-  document.getElementById('route-bars').innerHTML=sR.map(function(e){return'<div class="bar-row"><div class="bar-meta"><span class="bar-name" style="font-family:\'DM Mono\',monospace">'+e[0]+'</span><span class="bar-val">'+e[1]+'</span></div><div class="bar-bg"><div class="bar-fill bar-fill-alt" style="width:'+(e[1]/mR*100).toFixed(0)+'%"></div></div></div>';}).join('')||'<div style="font-size:13px;color:var(--text3)">No data</div>';
+  var aC={};ff.forEach(function(f){aC[f.airline]=(aC[f.airline]||0)+1;});
+  var sA=Object.entries(aC).sort(function(a,b){return b[1]-a[1];}),mA=sA[0]?sA[0][1]:1;
+  document.getElementById('airline-bars').innerHTML=sA.length?sA.map(function(e){return'<div class="bar-row"><div class="bar-meta"><span class="bar-name">'+e[0]+'</span><span class="bar-val">'+e[1]+'</span></div><div class="bar-bg"><div class="bar-fill" style="width:'+(e[1]/mA*100).toFixed(0)+'%"></div></div></div>';}).join(''):'<div style="font-size:13px;color:var(--text3)">No data</div>';
+  var rC={};ff.forEach(function(f){var k=f.from+'→'+f.to;rC[k]=(rC[k]||0)+1;});
+  var sR=Object.entries(rC).sort(function(a,b){return b[1]-a[1];}).slice(0,5),mR=sR[0]?sR[0][1]:1;
+  document.getElementById('route-bars').innerHTML=sR.length?sR.map(function(e){return'<div class="bar-row"><div class="bar-meta"><span class="bar-name" style="font-family:\'DM Mono\',monospace">'+e[0]+'</span><span class="bar-val">'+e[1]+'</span></div><div class="bar-bg"><div class="bar-fill bar-fill-alt" style="width:'+(e[1]/mR*100).toFixed(0)+'%"></div></div></div>';}).join(''):'<div style="font-size:13px;color:var(--text3)">No data</div>';
   document.getElementById('countries-list').textContent=[...ctrs].sort().join(' · ')||'—';
 }
 
-// ── Map ───────────────────────────────────────────────────────────────────────
-function initMap(){if(map)return;map=L.map('map',{center:[20,20],zoom:2});L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© <a href="https://openstreetmap.org/copyright">OpenStreetMap</a>',maxZoom:18}).addTo(map);}
+var countryLayer = null;
+var worldGeoJSON = null;
+
+function initMap(){
+  if(map)return;
+  map=L.map('map',{center:[20,20],zoom:2});
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{
+    attribution:'© <a href="https://carto.com/attributions">CARTO</a> © <a href="https://openstreetmap.org/copyright">OpenStreetMap</a>',
+    maxZoom:19, subdomains:'abcd'
+  }).addTo(map);
+  loadCountryBoundaries();
+}
+
+function loadCountryBoundaries(){
+  if(worldGeoJSON){ drawCountryLayer(); return; }
+  fetch('https://raw.githubusercontent.com/johan/world.geo.json/master/countries.geo.json')
+    .then(function(r){ return r.json(); })
+    .then(function(data){ worldGeoJSON = data; drawCountryLayer(); })
+    .catch(function(){ /* fail silently — country shading is a nice-to-have */ });
+}
+
+function drawCountryLayer(){
+  if(!worldGeoJSON || !map) return;
+  if(countryLayer) map.removeLayer(countryLayer);
+
+  var visitedCountries = new Set();
+  flights.forEach(function(f){
+    if(AP[f.from]) visitedCountries.add(AP[f.from].c);
+    if(AP[f.to]) visitedCountries.add(AP[f.to].c);
+  });
+
+  // Map our country names to GeoJSON "name" property variants where they differ
+  var nameMap = {
+    'USA':'United States', 'UK':'United Kingdom', 'South Korea':'South Korea',
+    'UAE':'United Arab Emirates', 'Czechia':'Czech Republic', 'Hong Kong':'Hong Kong S.A.R.'
+  };
+  var visitedGeoNames = new Set();
+  visitedCountries.forEach(function(c){ visitedGeoNames.add(nameMap[c] || c); });
+
+  countryLayer = L.geoJSON(worldGeoJSON, {
+    style: function(feature){
+      var name = feature.properties.name;
+      var isVisited = visitedGeoNames.has(name);
+      return {
+        fillColor: isVisited ? '#a8e6a3' : 'transparent',
+        fillOpacity: isVisited ? 0.35 : 0,
+        color: isVisited ? 'rgba(168,230,163,0.5)' : 'transparent',
+        weight: isVisited ? 1 : 0
+      };
+    }
+  }).addTo(map);
+
+  // Make sure country shading sits below arcs/dots
+  countryLayer.bringToBack();
+}
 function gcPoints(a,b){var toR=function(d){return d*Math.PI/180;},toDeg=function(r){return r*180/Math.PI;};var la1=toR(a.lat),lo1=toR(a.lon),la2=toR(b.lat),lo2=toR(b.lon);var d=Math.acos(Math.max(-1,Math.min(1,Math.sin(la1)*Math.sin(la2)+Math.cos(la1)*Math.cos(la2)*Math.cos(lo2-lo1))));var pts=[];for(var i=0;i<=80;i++){var t=i/80,sD=Math.sin(d),A=sD<1e-4?1-t:Math.sin((1-t)*d)/sD,B=sD<1e-4?t:Math.sin(t*d)/sD;var x=A*Math.cos(la1)*Math.cos(lo1)+B*Math.cos(la2)*Math.cos(lo2),y=A*Math.cos(la1)*Math.sin(lo1)+B*Math.cos(la2)*Math.sin(lo2),z=A*Math.sin(la1)+B*Math.sin(la2);pts.push([toDeg(Math.atan2(z,Math.sqrt(x*x+y*y))),toDeg(Math.atan2(y,x))]);}var segs=[[]];segs[0].push(pts[0]);for(var i=1;i<pts.length;i++){if(Math.abs(pts[i][1]-pts[i-1][1])>180)segs.push([]);segs[segs.length-1].push(pts[i]);}return segs;}
 function drawMap(){
   arcLayers.forEach(function(l){map.removeLayer(l);});dotLayers.forEach(function(l){map.removeLayer(l);});arcLayers=[];dotLayers=[];
+  if(worldGeoJSON) drawCountryLayer();
   var th={};flights.forEach(function(f){var k=rkey(f);th[k]=(th[k]||0)+1;});
   var dr=new Set(),da=new Set();
   flights.forEach(function(f){
