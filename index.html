@@ -6,8 +6,8 @@
 <title>Flight Tracker</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <style>
@@ -285,6 +285,7 @@ var AP = {
   ICN:{n:"Seoul Incheon",c:"South Korea",lat:37.460,lon:126.441},
   PEK:{n:"Beijing",c:"China",lat:40.080,lon:116.584},PVG:{n:"Shanghai",c:"China",lat:31.143,lon:121.806},
   KUL:{n:"Kuala Lumpur",c:"Malaysia",lat:2.745,lon:101.710},BKK:{n:"Bangkok",c:"Thailand",lat:13.681,lon:100.747},
+  HKT:{n:"Phuket",c:"Thailand",lat:8.113,lon:98.317},
   CMB:{n:"Colombo",c:"Sri Lanka",lat:7.181,lon:79.884},KTM:{n:"Kathmandu",c:"Nepal",lat:27.697,lon:85.359},
   MLE:{n:"Malé",c:"Maldives",lat:4.192,lon:73.529},
   JNB:{n:"Johannesburg",c:"South Africa",lat:-26.134,lon:28.242},NBO:{n:"Nairobi",c:"Kenya",lat:-1.319,lon:36.928},
@@ -690,6 +691,10 @@ var worldGeoJSON = null;
 
 function initMap(){
   if(map)return;
+  if(typeof L === 'undefined'){
+    showBanner('err','⚠ Map library failed to load — check your internet connection and reload');
+    return;
+  }
   map=L.map('map',{center:[20,20],zoom:2});
   L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{
     attribution:'© <a href="https://carto.com/attributions">CARTO</a> © <a href="https://openstreetmap.org/copyright">OpenStreetMap</a>',
@@ -778,7 +783,7 @@ function showPage(name,btn){
   document.querySelectorAll('.nav-tab,.mobile-tab').forEach(function(b){b.classList.remove('active');});
   document.getElementById('page-'+name).classList.add('active');
   document.querySelectorAll('.nav-tab,.mobile-tab').forEach(function(b){if(b.getAttribute('onclick')&&b.getAttribute('onclick').includes("'"+name+"'"))b.classList.add('active');});
-  if(name==='map'){initMap();setTimeout(function(){map.invalidateSize();drawMap();},100);}
+  if(name==='map'){initMap();setTimeout(function(){if(map){map.invalidateSize();drawMap();}},100);}
   if(name==='log')renderLog();
 }
 
