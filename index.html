@@ -696,10 +696,13 @@ function initMap(){
     return;
   }
   map=L.map('map',{center:[20,20],zoom:2});
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{
-    attribution:'© <a href="https://carto.com/attributions">CARTO</a> © <a href="https://openstreetmap.org/copyright">OpenStreetMap</a>',
-    maxZoom:19, subdomains:'abcd'
-  }).addTo(map);
+  L.tileLayer('https://basemaps.cartocdn.com/rastertiles/light_all/{z}/{x}/{y}{r}.png?key=YOUR_CARTO_KEY',
+  {
+    attribution: '© OpenStreetMap contributors © CARTO',
+    subdomains: 'abcd',
+    maxZoom: 19
+  }
+).addTo(map);
   loadCountryBoundaries();
 }
 
