@@ -696,11 +696,11 @@ function initMap(){
     return;
   }
   map=L.map('map',{center:[20,20],zoom:2});
-  L.tileLayer('https://basemaps.cartocdn.com/rastertiles/light_all/{z}/{x}/{y}{r}.png?key=YOUR_CARTO_KEY',
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png?key=cb1_4fg7_1_e8c5f72d30f564856a04616e',
   {
     attribution: '© OpenStreetMap contributors © CARTO',
-    subdomains: 'abcd',
-    maxZoom: 19
+    maxZoom: 19,
+    subdomains: 'abcd'
   }
 ).addTo(map);
   loadCountryBoundaries();
