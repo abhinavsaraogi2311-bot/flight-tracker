@@ -696,11 +696,10 @@ function initMap(){
     return;
   }
   map=L.map('map',{center:[20,20],zoom:2});
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png?key=cb1_4fg7_1_e8c5f72d30f564856a04616e',
+  L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}',
   {
-    attribution: '© OpenStreetMap contributors © CARTO',
-    maxZoom: 19,
-    subdomains: 'abcd'
+    attribution: 'Tiles © Esri — Sources: Esri, HERE, Garmin, OpenStreetMap contributors',
+    maxZoom: 16
   }
 ).addTo(map);
   loadCountryBoundaries();
